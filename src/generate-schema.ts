@@ -9,8 +9,12 @@ const gap = ``;
 const defineSchema = `export default defineSchema({`;
 const defineSchemaEnd = `});`;
 
-export const generateSchema = (plugins: BetterAuthPlugin[]): string => {
-	let all_schemas: string[] = [];
+export const generateSchema = (
+	plugins: BetterAuthPlugin[],
+	options: { indent?: number } = {},
+): string => {
+	const { indent = 2 } = options;
+	const all_schemas: string[] = [];
 
 	const plugin_schemas: AuthPluginSchema[] = plugins.map((x) => x.schema || {});
 
@@ -22,9 +26,9 @@ export const generateSchema = (plugins: BetterAuthPlugin[]): string => {
 			// for each schema within the plugin
 			const modelName = model.modelName || key;
 
-			let schema_start = `${modelName}: defineTable({\n`;
+			const schema_start = `${modelName}: defineTable({\n`;
 			let schema_body = ``;
-			let schema_ending = `}),`;
+			const schema_ending = `}),`;
 
 			for (const [field_name, field] of Object.entries(model.fields)) {
 				let type: "boolean" | "id" | "null" | "number" | "string" | "array" =
@@ -42,12 +46,15 @@ export const generateSchema = (plugins: BetterAuthPlugin[]): string => {
 			}
 
 			all_schemas.push(
-				padding(`${schema_start}${padding(schema_body)}${schema_ending}`),
+				padding(
+					`${schema_start}${padding(schema_body, indent)}${schema_ending}`,
+					indent,
+				),
 			);
 		}
 	}
 
-	let code: string[] = [
+	const code: string[] = [
 		imports,
 		gap,
 		defineSchema,
@@ -58,7 +65,7 @@ export const generateSchema = (plugins: BetterAuthPlugin[]): string => {
 	return code.join(`\n`);
 };
 
-export function padding(str: string, indent: number = 2) {
+export function padding(str: string, indent = 2) {
 	if (str.trim() === "") return "";
 	return str
 		.split("\n")

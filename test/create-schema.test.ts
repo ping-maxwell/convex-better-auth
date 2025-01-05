@@ -45,3 +45,43 @@ test("schema generation", () => {
 
 	expect(generate_schema).toBe(hard_coded_schema);
 });
+
+test("schema generation on 4 indent", () => {
+	const indent = 4;
+	const generate_schema = generateSchema(
+		[
+			{
+				schema: {
+					testTable: {
+						fields: {
+							hello: {
+								type: "boolean",
+							},
+						},
+					},
+				},
+				id: "test",
+			},
+		],
+		{ indent: indent },
+	);
+
+	const hard_coded_schema = [
+		`import { defineSchema, defineTable } from "convex/server";`,
+		`import { v } from "convex/values";`,
+		``,
+		`export default defineSchema({`,
+		padding(`testTable: defineTable({`, indent),
+		padding(padding(`hello: v.boolean(),`, indent), indent),
+		padding(`}),`, indent),
+		`});`,
+	].join("\n");
+
+	console.log(`\n\n\n--------------------------------- Generated:`);
+	console.log(generate_schema);
+	console.log(`--------------------------------- Hard-coded:`);
+	console.log(hard_coded_schema);
+	console.log(`---------------------------------\n\n\n`);
+
+	expect(generate_schema).toBe(hard_coded_schema);
+});
