@@ -4,14 +4,18 @@
 	"description": "Convex Database Adapter for Better-Auth.",
 	"main": "src/index.ts",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
+		"test": "vitest",
 		"build": "tsc"
 	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Multinite/convex-better-auth.git"
 	},
-	"keywords": ["convex", "database", "adapter"],
+	"keywords": [
+		"convex",
+		"database",
+		"adapter"
+	],
 	"author": "Multinite <multinite.com>",
 	"license": "MIT",
 	"devDependencies": {
@@ -19,7 +23,8 @@
 		"@changesets/cli": "^2.27.11",
 		"better-auth": "^1.1.10",
 		"convex": "^1.17.4",
-		"typescript": "^5.7.2"
+		"typescript": "^5.7.2",
+		"vitest": "^2.1.8"
 	},
 	"peerDependencies": {
 		"better-auth": "^1.1.10",
