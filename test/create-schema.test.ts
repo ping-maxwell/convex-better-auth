@@ -1,4 +1,4 @@
-import { generateSchema, padding } from "../src/schema-schema";
+import { generateSchema, padding } from "../src/generate-schema";
 import { expect, test } from "vitest";
 
 test(`schema generation's padding to correctly indent`, () => {

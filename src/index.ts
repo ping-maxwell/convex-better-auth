@@ -1,6 +1,6 @@
 import type { Adapter } from "better-auth";
 import type { DB } from "./types";
-import { generateSchema } from "./schema-schema";
+import { generateSchema } from "./generate-schema";
 
 export const convexAdapter = (db: DB): Adapter => {
 	return {
