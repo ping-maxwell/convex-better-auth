@@ -1,17 +1,13 @@
 {
-	"name": "ba-convex-adapter",
+	"name": "convex-better-auth",
 	"version": "0.0.0",
-	"description": "BetterAuth Convex Database Adapter.",
+	"description": "Convex Database Adapter for Better-Auth.",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"build": "tsc"
 	},
-	"keywords": [
-		"convex",
-		"database",
-		"adapter"
-	],
+	"keywords": ["convex", "database", "adapter"],
 	"author": "Multinite <multinite.com>",
 	"license": "MIT",
 	"devDependencies": {

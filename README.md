@@ -1,23 +1,23 @@
-# Better Auth Convex Database Adapter
+# Convex Database Adapter for Better-Auth
 
 This is a database adapter for [Convex](https://www.convex.dev/) that allows you to use [BetterAuth](https://www.better-auth.com/) with Convex.
 
 ## Installation
 
 ```bash
-npm install ba-convex-adapter
+npm install convex-database-adapter
 ```
 
 ## Usage
 
 ```ts
-import { ConvexAdapter } from 'ba-convex-adapter';
+import { ConvexAdapter } from "convex-database-adapter";
 
 const adapter = new ConvexAdapter({
-	convex: {
-		host: 'localhost',
-		port: 4444,
-		timeout: 10000,
-	},
+  convex: {
+    host: "localhost",
+    port: 4444,
+    timeout: 10000,
+  },
 });
 ```
