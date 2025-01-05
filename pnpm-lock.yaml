@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.10.5
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.4
@@ -25,7 +29,7 @@ importers:
         version: 5.7.2
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8
+        version: 2.1.8(@types/node@22.10.5)
 
 packages:
 
@@ -586,6 +590,9 @@ packages:
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
 
+  '@types/node@22.10.5':
+    resolution: {integrity: sha512-F8Q+SeGimwOo86fiovQh8qiXfFEh2/ocYv7tU5pJ3EXMSSxk1Joj5wefpFK2fHTf/N6HKGSxIDBT9f3gCxXPkQ==}
+
   '@vitest/expect@2.1.8':
     resolution: {integrity: sha512-8ytZ/fFHq2g4PJVAtDX57mayemKgDR6X3Oa2Foro+EygiOJHUXhCqBAAKQYYajZpFoIfvBCF1j6R6IYRSIUFuw==}
 
@@ -1093,6 +1100,9 @@ packages:
 
   uncrypto@0.1.3:
     resolution: {integrity: sha512-Ql87qFHB3s/De2ClA9e0gsnS6zXG27SkTiSJwjCc9MebbfapQfuPzumMIUMi38ezPZVNFcHI9sUIepeQfw8J8Q==}
+
+  undici-types@6.20.0:
+    resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
 
   universalify@0.1.2:
     resolution: {integrity: sha512-rBJeI5CXAlmy1pV+617WB9J63U6XcazHHF2f2dbJix4XzpUF0RS3Zbj0FGIOCAva5P/d/GBOYaACQ1w+0azUkg==}
@@ -1655,6 +1665,10 @@ snapshots:
 
   '@types/node@12.20.55': {}
 
+  '@types/node@22.10.5':
+    dependencies:
+      undici-types: 6.20.0
+
   '@vitest/expect@2.1.8':
     dependencies:
       '@vitest/spy': 2.1.8
@@ -1662,13 +1676,13 @@ snapshots:
       chai: 5.1.2
       tinyrainbow: 1.2.0
 
-  '@vitest/mocker@2.1.8(vite@5.4.11)':
+  '@vitest/mocker@2.1.8(vite@5.4.11(@types/node@22.10.5))':
     dependencies:
       '@vitest/spy': 2.1.8
       estree-walker: 3.0.3
       magic-string: 0.30.17
     optionalDependencies:
-      vite: 5.4.11
+      vite: 5.4.11(@types/node@22.10.5)
 
   '@vitest/pretty-format@2.1.8':
     dependencies:
@@ -2151,15 +2165,17 @@ snapshots:
 
   uncrypto@0.1.3: {}
 
+  undici-types@6.20.0: {}
+
   universalify@0.1.2: {}
 
-  vite-node@2.1.8:
+  vite-node@2.1.8(@types/node@22.10.5):
     dependencies:
       cac: 6.7.14
       debug: 4.4.0
       es-module-lexer: 1.6.0
       pathe: 1.1.2
-      vite: 5.4.11
+      vite: 5.4.11(@types/node@22.10.5)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -2171,18 +2187,19 @@ snapshots:
       - supports-color
       - terser
 
-  vite@5.4.11:
+  vite@5.4.11(@types/node@22.10.5):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.4.49
       rollup: 4.29.2
     optionalDependencies:
+      '@types/node': 22.10.5
       fsevents: 2.3.3
 
-  vitest@2.1.8:
+  vitest@2.1.8(@types/node@22.10.5):
     dependencies:
       '@vitest/expect': 2.1.8
-      '@vitest/mocker': 2.1.8(vite@5.4.11)
+      '@vitest/mocker': 2.1.8(vite@5.4.11(@types/node@22.10.5))
       '@vitest/pretty-format': 2.1.8
       '@vitest/runner': 2.1.8
       '@vitest/snapshot': 2.1.8
@@ -2198,9 +2215,11 @@ snapshots:
       tinyexec: 0.3.2
       tinypool: 1.0.2
       tinyrainbow: 1.2.0
-      vite: 5.4.11
-      vite-node: 2.1.8
+      vite: 5.4.11(@types/node@22.10.5)
+      vite-node: 2.1.8(@types/node@22.10.5)
       why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 22.10.5
     transitivePeerDependencies:
       - less
       - lightningcss

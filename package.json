@@ -12,7 +12,11 @@
 		"type": "git",
 		"url": "https://github.com/Multinite/convex-better-auth.git"
 	},
-	"keywords": ["convex", "database", "adapter"],
+	"keywords": [
+		"convex",
+		"database",
+		"adapter"
+	],
 	"author": "Multinite <multinite.com>",
 	"license": "MIT",
 	"devDependencies": {
@@ -27,5 +31,8 @@
 		"better-auth": "^1.1.10",
 		"convex": "^1.17.4",
 		"typescript": "^5.7.2"
+	},
+	"dependencies": {
+		"@types/node": "^22.10.5"
 	}
 }

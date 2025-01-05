@@ -1,21 +1,23 @@
 import type { AuthPluginSchema, BetterAuthPlugin } from "better-auth";
+import { getConvexPath, padding } from "./utils";
+import { getConvexSchema } from "./get-convex-schema";
+import { generateImportStage } from "./generate-imports";
+import { generateSchemaBuilderStage } from "./generate-schema-builder";
 
-const imports = [
-	`import { defineSchema, defineTable } from "convex/server";`,
-	`import { v } from "convex/values";`,
-].join("\n");
-
-const gap = ``;
 const defineSchema = `export default defineSchema({`;
 const defineSchemaEnd = `});`;
 
-export const generateSchema = (
+export const generateSchema = async (
 	plugins: BetterAuthPlugin[],
-	options: { indent?: number } = {},
-): string => {
-	const { indent = 2 } = options;
-	const all_schemas: string[] = [];
+	options: { indent?: number; convex_dir_path: string } = {
+		convex_dir_path: "./convex",
+	},
+): Promise<string> => {
+	const { indent = 2, convex_dir_path } = options;
 
+	const existing_schema_code: string = await getConvexSchema(convex_dir_path);
+
+	const all_schemas: string[] = [];
 	const plugin_schemas: AuthPluginSchema[] = plugins.map((x) => x.schema || {});
 
 	for (const plugin_schema of plugin_schemas) {
@@ -30,7 +32,8 @@ export const generateSchema = (
 			let schema_body = ``;
 			const schema_ending = `}),`;
 
-			for (const [field_name, field] of Object.entries(model.fields)) {
+			for (const [key_field_name, field] of Object.entries(model.fields)) {
+				const field_name = field.fieldName || key_field_name;
 				let type: "boolean" | "id" | "null" | "number" | "string" | "array" =
 					"id";
 
@@ -54,21 +57,10 @@ export const generateSchema = (
 		}
 	}
 
-	const code: string[] = [
-		imports,
-		gap,
-		defineSchema,
-		all_schemas.join("\n"),
-		defineSchemaEnd,
-	];
+	// Step 1. Ensure that the imports are present
+	let code: string = generateImportStage(existing_schema_code);
+	// Step 2. Add scham code to the defineSchema export
+	code = generateSchemaBuilderStage(code);
 
-	return code.join(`\n`);
+	return code;
 };
-
-export function padding(str: string, indent = 2) {
-	if (str.trim() === "") return "";
-	return str
-		.split("\n")
-		.map((x) => (x.length > 0 ? `${" ".repeat(indent)}${x}` : x))
-		.join("\n");
-}
