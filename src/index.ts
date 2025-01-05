@@ -1,7 +1,8 @@
 import type { Adapter } from "better-auth";
+import type { DB } from "./types";
 
-export const ConvexAdapter = (options): Adapter => {
-  return {
-    id: "convex",
-  };
+export const convexAdapter = (db: DB): Adapter => {
+	return {
+		id: "convex",
+	};
 };
