@@ -12,12 +12,13 @@ npm install convex-database-adapter
 
 ```ts
 import { ConvexAdapter } from "convex-database-adapter";
+import { betterAuth } from "better-auth";
 
-const adapter = new ConvexAdapter({
-  convex: {
+export const auth = betterAuth({
+  database: convexAdapter({
     host: "localhost",
     port: 4444,
-    timeout: 10000,
-  },
+  }),
+  //...your config
 });
 ```
