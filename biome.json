@@ -7,7 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"ignore": []
+		"ignore": ["convex"]
 	},
 	"formatter": {
 		"enabled": true,
@@ -22,6 +22,9 @@
 			"recommended": true,
 			"suspicious": {
 				"noExplicitAny": "off"
+			},
+			"style": {
+				"noUnusedTemplateLiteral": "off"
 			}
 		}
 	},

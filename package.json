@@ -5,17 +5,14 @@
 	"main": "src/index.ts",
 	"scripts": {
 		"test": "vitest",
-		"build": "tsc"
+		"build": "tsc",
+		"format": "biome format --write"
 	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Multinite/convex-better-auth.git"
 	},
-	"keywords": [
-		"convex",
-		"database",
-		"adapter"
-	],
+	"keywords": ["convex", "database", "adapter"],
 	"author": "Multinite <multinite.com>",
 	"license": "MIT",
 	"devDependencies": {
