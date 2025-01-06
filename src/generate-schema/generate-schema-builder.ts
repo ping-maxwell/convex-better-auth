@@ -5,7 +5,7 @@ import { format } from "prettier";
 const get_schema_regex = /defineSchema\({[^;]*;/gm;
 const get_table = /([a-zA-Z0-9_]+): defineTable\({[^}]*}\)/gm;
 const get_values = /([a-zA-Z0-9_]+): (v.[^,]*),/gm;
-const get_types = /v\.([^(]*)/gm;
+const get_types = /v\.([^(]*)[("]{2}([^")]*)|v\.([^(]*)/gm;
 
 type Field = {
 	type: ConvexTypes;
@@ -56,10 +56,18 @@ function parse_existing_schema(code: string): {
 			let values: RegExpExecArray | null = get_values.exec(table);
 			while (values !== null) {
 				const [, field_name, field_value] = values;
-				const types = [...field_value.matchAll(get_types)].map((x) => x[1]);
+				const types = [...field_value.matchAll(get_types)].map((x) => {
+					if (x[1] === "id") {
+						return [
+							x[1] /*type*/,
+							x[2] /*if type is "id", then this will be the id name, else undefined*/,
+						];
+					}
+					return [x[3] /*type*/, undefined];
+				});
 				tables[table_name][field_name] = {
-					type: types.find((x) => x !== "optional") as ConvexTypes,
-					optional: types.includes("optional"),
+					type: types.find((x) => x[0] !== "optional")?.[0] as ConvexTypes,
+					optional: !!types.find((x) => x[0] === "optional"),
 					name: field_name,
 				};
 
@@ -95,11 +103,10 @@ function convert_plugins_to_convex_schema(
 			for (const [key_field_name, field] of Object.entries(model.fields)) {
 				const field_name = field.fieldName || key_field_name;
 				all_field_names.push(field_name);
-				let type: ConvexTypes = "id";
+				let type: ConvexTypes = "string";
 				const isOptional = !field.required;
 
-				if (field_name === "id") type = "id";
-				else if (field.type === "boolean") type = "boolean";
+				if (field.type === "boolean") type = "boolean";
 				else if (field.type === "number") type = "number";
 				else if (field.type === "string") type = "string";
 				else if (field.type === "date") type = "string";
