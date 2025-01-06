@@ -23,11 +23,11 @@ test("schema generation", async () => {
 						fields: {
 							hello: {
 								type: "boolean",
-								required: false
+								required: false,
 							},
 							hello2: {
 								type: "string",
-								required: true
+								required: true,
 							},
 						},
 					},
@@ -46,9 +46,16 @@ test("schema generation", async () => {
 			`import {v} from "convex/values";`,
 			``,
 			`export default defineSchema({`,
+			`messages: defineTable({`,
+			`author: v.string(),`,
+			`body: v.boolean(),`,
+			`optional_body: v.optional(v.boolean()),`,
+			`}),`,
 			`testTable: defineTable({`,
 			`hello: v.optional(v.boolean()),`,
 			`hello2: v.string(),`,
+			`say: v.string(),`,
+			`say2: v.boolean(),`,
 			`}),`,
 			`});`,
 		].join("\n"),

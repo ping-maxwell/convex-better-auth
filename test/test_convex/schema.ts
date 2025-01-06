@@ -5,9 +5,6 @@ export default defineSchema({
 	messages: defineTable({
 		author: v.string(),
 		body: v.boolean(),
-	}),
-	messages2: defineTable({
-		author: v.string(),
 		optional_body: v.optional(v.boolean()),
 	}),
 	testTable: defineTable({
