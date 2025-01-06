@@ -7,6 +7,5 @@ export default defineSchema({
     body: v.optional(v.boolean()),
     test2: v.string(),
     stringOrNumber: v.union(v.string(), v.number()),
-
   }),
 });

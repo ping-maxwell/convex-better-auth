@@ -22,9 +22,6 @@ export const generateSchemaBuilderStage = async ({
 }: { code: string; plugins: BetterAuthPlugin[] }) => {
 	const formatted_code = await format(code, { filepath: "schema.ts" });
 
-	console.log(`formatted_code:`);
-	console.log(formatted_code);
-
 	const { post, pre, tables } = parse_existing_schema(formatted_code);
 
 	const convex_schema_str = convert_plugins_to_convex_schema(plugins, tables);
