@@ -23,6 +23,11 @@ test("schema generation", async () => {
 						fields: {
 							hello: {
 								type: "boolean",
+								required: false
+							},
+							hello2: {
+								type: "string",
+								required: true
 							},
 						},
 					},
@@ -42,7 +47,8 @@ test("schema generation", async () => {
 			``,
 			`export default defineSchema({`,
 			`testTable: defineTable({`,
-			`hello: v.boolean(),`,
+			`hello: v.optional(v.boolean()),`,
+			`hello2: v.string(),`,
 			`}),`,
 			`});`,
 		].join("\n"),

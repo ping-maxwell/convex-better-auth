@@ -8,17 +8,19 @@ const get_values = /([a-zA-Z0-9_]+): (v.[^,]*),/gm;
 const get_types = /v\.([^(]*)/gm;
 
 type Field = {
-	type: "boolean" | "id" | "null" | "number" | "string" | "array";
+	type: ConvexTypes;
 	optional: boolean;
 	name: string;
 };
 type Table = Record<string, Record<string, Field>>;
 
+type ConvexTypes = "boolean" | "id" | "null" | "number" | "string" | "array";
+
 export const generateSchemaBuilderStage = async ({
 	code,
 	plugins,
 }: { code: string; plugins: BetterAuthPlugin[] }) => {
-	let formatted_code = await format(code, { filepath: "schema.ts" });
+	const formatted_code = await format(code, { filepath: "schema.ts" });
 
 	console.log(`formatted_code:`);
 	console.log(formatted_code);
@@ -27,8 +29,9 @@ export const generateSchemaBuilderStage = async ({
 
 	const convex_schema_str = convert_plugins_to_convex_schema(plugins, tables);
 
-
-	return await format(`${pre}defineSchema({${convex_schema_str}})${post}`, { filepath: "schema.ts" });
+	return await format(`${pre}defineSchema({${convex_schema_str}})${post}`, {
+		filepath: "schema.ts",
+	});
 };
 
 function parse_existing_schema(code: string): {
@@ -58,12 +61,7 @@ function parse_existing_schema(code: string): {
 				const [, field_name, field_value] = values;
 				const types = [...field_value.matchAll(get_types)].map((x) => x[1]);
 				tables[table_name][field_name] = {
-					type: types.find((x) => x !== "optional") as
-						| "boolean"
-						| "id"
-						| "null"
-						| "number"
-						| "string",
+					type: types.find((x) => x !== "optional") as ConvexTypes,
 					optional: types.includes("optional"),
 					name: field_name,
 				};
@@ -79,8 +77,9 @@ function convert_plugins_to_convex_schema(
 	plugins: BetterAuthPlugin[],
 	existing_tables: Table,
 ): string {
-	const all_schemas: string[] = [];
 	const plugin_schemas: AuthPluginSchema[] = plugins.map((x) => x.schema || {});
+	const all_model_names: string[] = [];
+	const all_schemas: string[] = [];
 	for (const plugin_schema of plugin_schemas) {
 		// for each plugin
 		if (Object.keys(plugin_schema).length === 0) continue;
@@ -88,15 +87,19 @@ function convert_plugins_to_convex_schema(
 		for (const [key, model] of Object.entries(plugin_schema)) {
 			// for each schema within the plugin
 			const modelName = model.modelName || key;
+			all_model_names.push(modelName);
+			const existing_table: Record<string, Field> | undefined =
+				existing_tables[modelName];
 
 			const schema_start = `${modelName}: defineTable({\n`;
 			let schema_body = ``;
 			const schema_ending = `}),`;
-
+			const all_field_names: string[] = [];
 			for (const [key_field_name, field] of Object.entries(model.fields)) {
 				const field_name = field.fieldName || key_field_name;
-				let type: "boolean" | "id" | "null" | "number" | "string" | "array" =
-					"id";
+				all_field_names.push(field_name);
+				let type: ConvexTypes = "id";
+				const isOptional = !field.required;
 
 				if (field_name === "id") type = "id";
 				else if (field.type === "boolean") type = "boolean";
@@ -106,12 +109,47 @@ function convert_plugins_to_convex_schema(
 				else if (field.type === "number[]" || field.type === "string[]")
 					type = "array";
 
-				schema_body += `${field_name}: v.${type}(),\n`;
+				schema_body += `${field_name}: ${isOptional ? `v.optional(v.${type}())` : `v.${type}()`},\n`;
+			}
+
+			if (existing_table) {
+				for (const [field_name, field] of Object.entries(existing_table).filter(
+					(x) => !all_field_names.includes(x[0]),
+				)) {
+					const { type, optional } = field;
+					schema_body += `${field_name}: ${optional ? `v.optional(v.${type}())` : `v.${type}()`},\n`;
+				}
 			}
 
 			all_schemas.push(`${schema_start}${schema_body}${schema_ending}`);
 		}
 	}
 
+	all_schemas.splice(
+		0,
+		0,
+		convert_parsed_schema_to_convex_schema(
+			Object.fromEntries(
+				Object.entries(existing_tables).filter(
+					([table_name, fields]) => !all_model_names.includes(table_name),
+				),
+			),
+		),
+	);
+
 	return all_schemas.join("\n");
+}
+
+function convert_parsed_schema_to_convex_schema(parsed_schema: Table): string {
+	let res = "";
+
+	for (const [table_name, fields] of Object.entries(parsed_schema)) {
+		res += `\n${table_name}: defineTable({\n`;
+		for (const [field_name, field] of Object.entries(fields)) {
+			const { type, optional } = field;
+			res += `${field_name}: ${optional ? `v.optional(v.${type}())` : `v.${type}()`},\n`;
+		}
+		res += `}),`;
+	}
+	return res;
 }

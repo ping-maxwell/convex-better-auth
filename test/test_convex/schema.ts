@@ -10,4 +10,9 @@ export default defineSchema({
 		author: v.string(),
 		optional_body: v.optional(v.boolean()),
 	}),
+	testTable: defineTable({
+		say: v.string(),
+		say2: v.boolean(),
+		hello: v.int64(),
+	}),
 });
