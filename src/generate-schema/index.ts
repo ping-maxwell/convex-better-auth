@@ -3,9 +3,6 @@ import { getConvexSchema } from "./get-convex-schema";
 import { generateImportStage } from "./generate-imports";
 import { generateSchemaBuilderStage } from "./generate-schema-builder";
 
-const defineSchema = `export default defineSchema({`;
-const defineSchemaEnd = `});`;
-
 export const generateSchema = async (
 	plugins: BetterAuthPlugin[],
 	options: { convex_dir_path: string } = {

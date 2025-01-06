@@ -23,13 +23,3 @@ export function getConvexPath(provided_convex_dir_path?: string) {
 	// Otherwise, treat it as relative to current directory
 	return path.join(base_path, provided_convex_dir_path);
 }
-
-export function doesHaveRequiredImports(code: string) {
-	return (
-		code.includes(`defineSchema`) &&
-		code.includes(`defineTable`) &&
-		code.includes(`v`) &&
-		code.includes(`convex/server`) &&
-		code.includes(`convex/values`)
-	);
-}

@@ -5,8 +5,6 @@ import { format } from "prettier";
 
 const CONVEX_TEST_DIR_PATH = getConvexPath("./test/test_convex");
 
-console.log(`CONVEX_TEST_DIR_PATH: ${CONVEX_TEST_DIR_PATH}`);
-
 test(`schema generation's padding to correctly indent`, () => {
 	expect(padding("test")).toBe("  test");
 	expect(padding(" test")).toBe("   test");
