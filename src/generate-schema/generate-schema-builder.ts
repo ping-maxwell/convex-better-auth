@@ -1,5 +1,50 @@
-export const generateSchemaBuilderStage = (code: string) => {
+import type { AuthPluginSchema, BetterAuthPlugin } from "better-auth";
+import { padding } from "./utils";
 
-    
-    return code;
+export const generateSchemaBuilderStage = ({
+	code,
+	plugins,
+	indent,
+}: { code: string; plugins: BetterAuthPlugin[]; indent: number }) => {
+	const all_schemas: string[] = [];
+	const plugin_schemas: AuthPluginSchema[] = plugins.map((x) => x.schema || {});
+
+	for (const plugin_schema of plugin_schemas) {
+		// for each plugin
+		if (Object.keys(plugin_schema).length === 0) continue;
+
+		for (const [key, model] of Object.entries(plugin_schema)) {
+			// for each schema within the plugin
+			const modelName = model.modelName || key;
+
+			const schema_start = `${modelName}: defineTable({\n`;
+			let schema_body = ``;
+			const schema_ending = `}),`;
+
+			for (const [key_field_name, field] of Object.entries(model.fields)) {
+				const field_name = field.fieldName || key_field_name;
+				let type: "boolean" | "id" | "null" | "number" | "string" | "array" =
+					"id";
+
+				if (field_name === "id") type = "id";
+				else if (field.type === "boolean") type = "boolean";
+				else if (field.type === "number") type = "number";
+				else if (field.type === "string") type = "string";
+				else if (field.type === "date") type = "string";
+				else if (field.type === "number[]" || field.type === "string[]")
+					type = "array";
+
+				schema_body += `${field_name}: v.${type}(),\n`;
+			}
+
+			all_schemas.push(
+				padding(
+					`${schema_start}${padding(schema_body, indent)}${schema_ending}`,
+					indent,
+				),
+			);
+		}
+	}
+
+	return code;
 };
