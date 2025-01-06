@@ -1,11 +1,11 @@
 import type { AuthPluginSchema, BetterAuthPlugin } from "better-auth";
 import { padding } from "./utils";
+import { format, type Options } from "prettier";
 
-export const generateSchemaBuilderStage = ({
+export const generateSchemaBuilderStage = async ({
 	code,
 	plugins,
-	indent,
-}: { code: string; plugins: BetterAuthPlugin[]; indent: number }) => {
+}: { code: string; plugins: BetterAuthPlugin[] }) => {
 	const all_schemas: string[] = [];
 	const plugin_schemas: AuthPluginSchema[] = plugins.map((x) => x.schema || {});
 
@@ -37,14 +37,9 @@ export const generateSchemaBuilderStage = ({
 				schema_body += `${field_name}: v.${type}(),\n`;
 			}
 
-			all_schemas.push(
-				padding(
-					`${schema_start}${padding(schema_body, indent)}${schema_ending}`,
-					indent,
-				),
-			);
+			all_schemas.push(`${schema_start}${schema_body}${schema_ending}`);
 		}
 	}
 
-	return code;
+	return await format(code, { filepath: "schema.ts" });
 };

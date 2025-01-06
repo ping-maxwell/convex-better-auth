@@ -1,6 +1,7 @@
 import { generateSchema } from "../src/generate-schema";
 import { getConvexPath, padding } from "../src/generate-schema/utils";
 import { expect, test } from "vitest";
+import { format } from "prettier";
 
 const CONVEX_TEST_DIR_PATH = getConvexPath("./test/test_convex");
 
@@ -36,56 +37,19 @@ test("schema generation", async () => {
 		},
 	);
 
-	const hard_coded_schema = [
-		`import { defineSchema, defineTable } from "convex/server";`,
-		`import { v } from "convex/values";`,
-		``,
-		`export default defineSchema({`,
-		padding(`testTable: defineTable({`),
-		padding(padding(`hello: v.boolean(),`)),
-		padding(`}),`),
-		`});`,
-	].join("\n");
-
-	console.log(`\n\n\n--------------------------------- Generated:`);
-	console.log(generate_schema);
-	console.log(`--------------------------------- Hard-coded:`);
-	console.log(hard_coded_schema);
-	console.log(`---------------------------------\n\n\n`);
-
-	expect(generate_schema).toBe(hard_coded_schema);
-});
-
-test("schema generation on 4 indent", async () => {
-	const indent = 4;
-	const generate_schema = await generateSchema(
+	const hard_coded_schema = await format(
 		[
-			{
-				schema: {
-					testTable: {
-						fields: {
-							hello: {
-								type: "boolean",
-							},
-						},
-					},
-				},
-				id: "test",
-			},
-		],
-		{ indent: indent, convex_dir_path: CONVEX_TEST_DIR_PATH },
+			`import {defineSchema,defineTable} from "convex/server";`,
+			`import {v} from "convex/values";`,
+			``,
+			`export default defineSchema({`,
+			`testTable: defineTable({`,
+			`hello: v.boolean(),`,
+			`}),`,
+			`});`,
+		].join("\n"),
+		{ filepath: "schema.ts" },
 	);
-
-	const hard_coded_schema = [
-		`import { defineSchema, defineTable } from "convex/server";`,
-		`import { v } from "convex/values";`,
-		``,
-		`export default defineSchema({`,
-		padding(`testTable: defineTable({`, indent),
-		padding(padding(`hello: v.boolean(),`, indent), indent),
-		padding(`}),`, indent),
-		`});`,
-	].join("\n");
 
 	console.log(`\n\n\n--------------------------------- Generated:`);
 	console.log(generate_schema);
