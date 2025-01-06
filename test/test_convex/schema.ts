@@ -8,6 +8,6 @@ export default defineSchema({
 	}),
 	messages2: defineTable({
 		author: v.string(),
-		body: v.boolean(),
+		optional_body: v.optional(v.boolean()),
 	}),
 });

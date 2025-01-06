@@ -1,6 +1,18 @@
 import type { AuthPluginSchema, BetterAuthPlugin } from "better-auth";
-import type { FieldType, FieldAttribute } from "better-auth/db";
 import { format } from "prettier";
+
+//TODO: make unit tests for the regex to scan for `export default defineSchema({` or for `const schema = defineSchema({`.
+const get_schema_regex = /defineSchema\({[^;]*;/gm;
+const get_table = /([a-zA-Z0-9_]+): defineTable\({[^}]*}\)/gm;
+const get_values = /([a-zA-Z0-9_]+): (v.[^,]*),/gm;
+const get_types = /v\.([^(]*)/gm;
+
+type Field = {
+	type: "boolean" | "id" | "null" | "number" | "string" | "array";
+	optional: boolean;
+	name: string;
+};
+type Table = Record<string, Record<string, Field>>;
 
 export const generateSchemaBuilderStage = async ({
 	code,
@@ -11,22 +23,21 @@ export const generateSchemaBuilderStage = async ({
 	console.log(`formatted_code:`);
 	console.log(formatted_code);
 
-	const existing_schema = parse_existing_schema(formatted_code);
+	const { post, pre, tables } = parse_existing_schema(formatted_code);
 
-	return "";
+	const convex_schema_str = convert_plugins_to_convex_schema(plugins, tables);
+
+
+	return await format(`${pre}defineSchema({${convex_schema_str}})${post}`, { filepath: "schema.ts" });
 };
-
-//TODO: make unit tests for the regex to scan for `export default defineSchema({` or for `const schema = defineSchema({`.
-const get_schema_regex = /defineSchema\({[^;]*;/gm;
-const get_values = /([a-zA-Z0-9_]+): v.([a-zA-Z0-9_]+)\(\),/gm;
-const get_table = /([a-zA-Z0-9_]+): defineTable\({[^}]*}\)/gm;
 
 function parse_existing_schema(code: string): {
 	pre: string;
-	existing_schema: Record<string, FieldAttribute<FieldType>>;
+	tables: Table;
 	post: string;
 } {
 	let pre = "";
+	const tables: Table = {};
 	let post = "";
 
 	if (get_schema_regex.test(code)) {
@@ -37,14 +48,37 @@ function parse_existing_schema(code: string): {
 			.replace("export default defineSchema({", "")
 			.replace("});", "");
 
-		const tables = schema_str.match(get_table);
-		console.log(`tables:`, tables);
-	}
+		const tables_match = schema_str.match(get_table) || [];
+		for (const table of tables_match) {
+			const table_name = table.split(":")[0];
+			tables[table_name] = {};
 
-	return { post, pre, existing_schema: {} };
+			let values: RegExpExecArray | null = get_values.exec(table);
+			while (values !== null) {
+				const [, field_name, field_value] = values;
+				const types = [...field_value.matchAll(get_types)].map((x) => x[1]);
+				tables[table_name][field_name] = {
+					type: types.find((x) => x !== "optional") as
+						| "boolean"
+						| "id"
+						| "null"
+						| "number"
+						| "string",
+					optional: types.includes("optional"),
+					name: field_name,
+				};
+
+				values = get_values.exec(table);
+			}
+		}
+	}
+	return { post, pre, tables };
 }
 
-function convert_plugins_to_convex_schema(plugins: BetterAuthPlugin[]): string {
+function convert_plugins_to_convex_schema(
+	plugins: BetterAuthPlugin[],
+	existing_tables: Table,
+): string {
 	const all_schemas: string[] = [];
 	const plugin_schemas: AuthPluginSchema[] = plugins.map((x) => x.schema || {});
 	for (const plugin_schema of plugin_schemas) {
