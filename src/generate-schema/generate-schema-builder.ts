@@ -120,7 +120,7 @@ function convert_plugins_to_convex_schema(
 					else contents = `"${modelName}"`;
 				}
 
-				schema_body += `${field_name}: ${isOptional ? `v.optional(v.${type}(${contents}))` : `v.${type}(${contents})`},\n`;
+				schema_body += `${field_name}: ${isOptional && type !== "id" ? `v.optional(v.${type}(${contents}))` : `v.${type}(${contents})`},\n`;
 			}
 
 			if (existing_table) {

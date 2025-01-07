@@ -193,4 +193,66 @@ describe(`Handle schema generation`, async () => {
 
 		expect(generate_schema).toBe(hard_coded_schema);
 	});
+
+	it(`should generate references correctly`, async () => {
+		const generate_schema = await generateSchema(
+			[
+				{
+					id: "admin",
+					schema: {
+						admin: {
+							fields: {
+								id: {
+									type: "string",
+									required: true,
+								},
+								reference_optional: {
+									type: "string",
+									references: {
+										field: "something",
+										model: "something_else",
+									},
+								},
+								reference_required: {
+									type: "string",
+									required: true,
+									references: {
+										field: "something2",
+										model: "something2_else",
+									},
+								},
+							},
+						},
+					},
+				},
+			],
+			{
+				convex_dir_path: CONVEX_TEST_DIR_PATH3,
+			},
+		);
+
+		const hard_coded_schema = await format(
+			[
+				`import {defineSchema,defineTable} from "convex/server";`,
+				`import {v} from "convex/values";`,
+				``,
+				`export default defineSchema({`,
+				`admin: defineTable({`,
+				`id: v.id("admin"),`,
+				`reference_optional: v.id("something_else"),`,
+				`reference_required: v.id("something2_else"),`,
+				`}),`,
+				`});`,
+			].join("\n"),
+			{ filepath: "schema.ts" },
+		);
+
+		console.log(`\n\n\n--------------------------------- Generated:`);
+		console.log(generate_schema);
+		console.log(`--------------------------------- Hard-coded:`);
+		console.log(hard_coded_schema);
+		console.log(`---------------------------------\n\n\n`);
+
+		expect(generate_schema).toBe(hard_coded_schema);
+	});
 });
