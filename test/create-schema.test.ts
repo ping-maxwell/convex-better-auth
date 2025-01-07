@@ -172,7 +172,7 @@ describe(`Handle schema generation`, async () => {
 				`export default defineSchema({`,
 				`admin: defineTable({`,
 				`name: v.string(),`,
-				`id: v.string(),`,
+				`id: v.id("admin"),`,
 				`isAdmin: v.boolean(),`,
 				`status: v.optional(v.string()),`,
 				`date: v.optional(v.string()),`,
