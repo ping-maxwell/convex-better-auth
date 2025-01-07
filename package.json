@@ -5,7 +5,7 @@
 	"main": "src/index.ts",
 	"scripts": {
 		"test": "vitest",
-		"build": "tsc",
+		"build": "biome format --write && tsc",
 		"format": "biome format --write"
 	},
 	"repository": {
