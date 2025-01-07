@@ -6,7 +6,6 @@
 		"allowJs": true,
 		"resolveJsonModule": true,
 		"module": "Preserve",
-		"noEmit": true,
 		"moduleResolution": "Bundler",
 		"moduleDetection": "force",
 		"isolatedModules": true,
@@ -18,9 +17,11 @@
 		"noFallthroughCasesInSwitch": true,
 		"rootDir": ".",
 		"downlevelIteration": true,
-		"baseUrl": "."
+		"baseUrl": ".",
+		"outDir": "dist",
+		"declaration": true
 	},
 	"exclude": ["**/dist", "node_modules"],
 	"references": [],
-	"include": ["src/**/*"]
+	"include": ["src/index.ts"]
 }
