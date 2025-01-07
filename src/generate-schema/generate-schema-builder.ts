@@ -106,14 +106,21 @@ function convert_plugins_to_convex_schema(
 				let type: ConvexTypes = "string";
 				const isOptional = !field.required;
 
-				if (field.type === "boolean") type = "boolean";
+				if (field_name === "id" || field.references?.model) type = "id";
+				else if (field.type === "boolean") type = "boolean";
 				else if (field.type === "number") type = "number";
 				else if (field.type === "string") type = "string";
 				else if (field.type === "date") type = "string";
 				else if (field.type === "number[]" || field.type === "string[]")
 					type = "array";
 
-				schema_body += `${field_name}: ${isOptional ? `v.optional(v.${type}())` : `v.${type}()`},\n`;
+				let contents = "";
+				if (type === "id") {
+					if (field.references?.model) contents = `"${field.references.model}"`;
+					else contents = `"${modelName}"`;
+				}
+
+				schema_body += `${field_name}: ${isOptional ? `v.optional(v.${type}(${contents}))` : `v.${type}(${contents})`},\n`;
 			}
 
 			if (existing_table) {
