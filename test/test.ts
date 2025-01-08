@@ -1,15 +1,9 @@
 import { betterAuth } from "better-auth";
 import { convexAdapter } from "./../src";
-import { query } from "../convex/_generated/server";
-import { v } from "convex/values";
+import { query, mutation } from "../convex/_generated/server";
 
-const auth = betterAuth({
-	database: convexAdapter(query),
-});
-
-const listTasks = query({
-	handler: async (ctx) => {
-		const tasks = await ctx.db.query("tasks").collect();
-		// do something with `tasks`
-	},
+export const auth = betterAuth({
+	database: convexAdapter({ mutation, query }),
+	plugins: [],
+	//... other options
 });
