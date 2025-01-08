@@ -1,14 +1,23 @@
 import { BetterAuthError } from "better-auth";
 import { getAuthTables } from "better-auth/db";
-import type { ConvexAdapterOptions, ConvexMutation, ConvexQuery } from "../types";
+import type {
+	ConvexAdapterOptions,
+	ConvexMutation,
+	ConvexQuery,
+} from "../types";
 import type { BetterAuthOptions } from "better-auth";
+import { v } from "convex/values";
+import type { ConvexClient } from "convex/browser";
 
-export const createTransform = (
-	query: ConvexQuery,
-	mutation: ConvexMutation,
-	config: ConvexAdapterOptions,
-	options: BetterAuthOptions,
-) => {
+export const createTransform = ({
+	client,
+	config,
+	options,
+}: {
+	config: ConvexAdapterOptions;
+	options: BetterAuthOptions;
+	client: ConvexClient;
+}) => {
 	const schema = getAuthTables(options);
 
 	function getField(model: string, field: string) {
@@ -19,14 +28,8 @@ export const createTransform = (
 		return f.fieldName || field;
 	}
 
-	function insert(table_name: string, values: Record<string, any>) {
-		const isnert = mutation({
-			args: { text: v.string() },
-			handler: async (ctx, args) => {
-			  const taskId = await ctx.db.insert("tasks", { text: args.text });
-			  // do something with `taskId`
-			},
-		  });
+	function db(action: "insert" | "read" | "update" | "delete") {
+
 	}
 
 	function getSchema(modelName: string) {
@@ -200,5 +203,6 @@ export const createTransform = (
 		},
 		getField,
 		getModelName,
+		db,
 	};
 };

@@ -1,29 +1,32 @@
+import { ConvexClient } from "convex/browser";
 import type { Adapter, BetterAuthOptions } from "better-auth";
 import type {
 	ConvexAdapterOptions,
-	ConvexMutation,
-	ConvexQuery,
 } from "./types";
 import { generateSchema } from "./generate-schema";
 import { createTransform } from "./transform";
 import { BetterAuthError } from "node_modules/better-auth/dist/index.cjs";
+import { anyApi } from "convex/server";
 
 export const convexAdapter =
-	(
-		{
-			query: convex_query,
-			mutation,
-		}: { query: ConvexQuery; mutation: ConvexMutation },
-		config: ConvexAdapterOptions = {},
-	) =>
+	(config: ConvexAdapterOptions = {}) =>
 	(options: BetterAuthOptions): Adapter => {
+		if (!process.env.CONVEX_URL)
+			throw new Error('Please set "CONVEX_URL" to your .env file.');
+		const client = new ConvexClient(process.env.CONVEX_URL as string);
+
 		const {
 			transformInput,
 			getSchema,
 			transformOutput,
 			withReturning,
 			getModelName,
-		} = createTransform(convex_query, mutation, config, options);
+			db,
+		} = createTransform({
+			config,
+			options,
+			client,
+		});
 
 		return {
 			id: "convex",
@@ -32,7 +35,7 @@ export const convexAdapter =
 				const schemaModel = getSchema(model);
 				checkMissingFields(schemaModel, getModelName(model), transformed);
 
-				const builder = db.insert(schemaModel).values(transformed);
+				const builder = db("insert");
 				const returned = await withReturning(model, builder, transformed);
 				return transformOutput(returned, model);
 			},
@@ -56,13 +59,13 @@ function checkMissingFields(
 ) {
 	if (!schema) {
 		throw new BetterAuthError(
-			"Drizzle adapter failed to initialize. Schema not found. Please provide a schema object in the adapter options object.",
+			"Convex adapter failed to initialize. Schema not found. Please provide a schema object in the adapter options object.",
 		);
 	}
 	for (const key in values) {
 		if (!schema[key]) {
 			throw new BetterAuthError(
-				`The field "${key}" does not exist in the "${model}" schema. Please update your drizzle schema or re-generate using "npx @better-auth/cli generate".`,
+				`The field "${key}" does not exist in the "${model}" schema. Please update your Convex schema or re-generate using "npx @better-auth/cli generate".`,
 			);
 		}
 	}

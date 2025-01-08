@@ -19,7 +19,7 @@
 		"downlevelIteration": true,
 		"baseUrl": ".",
 		"outDir": "dist",
-		"declaration": true
+		"declaration": true,
 	},
 	"exclude": ["**/dist", "node_modules"],
 	"references": [],

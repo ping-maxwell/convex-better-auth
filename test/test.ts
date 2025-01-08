@@ -1,9 +1,10 @@
 import { betterAuth } from "better-auth";
 import { convexAdapter } from "./../src";
-import { query, mutation } from "../convex/_generated/server";
+import { fullApi } from "../convex/_generated/api";
 
 export const auth = betterAuth({
-	database: convexAdapter({ mutation, query }),
+	database: convexAdapter(),
 	plugins: [],
 	//... other options
 });
+fullApi

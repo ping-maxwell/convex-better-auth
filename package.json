@@ -4,6 +4,7 @@
 	"description": "Convex Database Adapter for Better-Auth.",
 	"main": "src/index.ts",
 	"scripts": {
+		"dev:convex": "npx convex dev",
 		"test": "vitest",
 		"build": "biome format --write && tsc",
 		"format": "biome format --write"
