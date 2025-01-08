@@ -5,9 +5,9 @@ import type { BetterAuthOptions, Where } from "better-auth";
 import type { ConvexClient } from "convex/browser";
 
 export const createTransform = ({
-	client,
 	config,
 	options,
+	client,
 }: {
 	config: ConvexAdapterOptions;
 	options: BetterAuthOptions;
@@ -23,23 +23,8 @@ export const createTransform = ({
 		return f.fieldName || field;
 	}
 
-	function db(action: "insert" | "read" | "update" | "delete") {}
-
-	function getSchema(modelName: string) {
-		const schema = config.schema || db._.fullSchema;
-		if (!schema) {
-			throw new BetterAuthError(
-				"Drizzle adapter failed to initialize. Schema not found. Please provide a schema object in the adapter options object.",
-			);
-		}
-		const model = getModelName(modelName);
-		const schemaModel = schema[model];
-		if (!schemaModel) {
-			throw new BetterAuthError(
-				`[# Drizzle Adapter]: The model "${model}" was not found in the schema object. Please pass the schema directly to the adapter options.`,
-			);
-		}
-		return schemaModel;
+	function db(action: "insert" | "read" | "update" | "delete") {
+		return "";
 	}
 
 	const getModelName = (model: string) => {
@@ -52,7 +37,6 @@ export const createTransform = ({
 
 	const useDatabaseGeneratedId = options?.advanced?.generateId === false;
 	return {
-		getSchema,
 		transformInput(
 			data: Record<string, any>,
 			model: string,
@@ -81,32 +65,6 @@ export const createTransform = ({
 				);
 			}
 			return transformedData;
-		},
-		transformOutput(
-			data: Record<string, any>,
-			model: string,
-			select: string[] = [],
-		) {
-			if (!data) return null;
-			const transformedData: Record<string, any> =
-				data.id || data._id
-					? select.length === 0 || select.includes("id")
-						? {
-								id: data.id,
-							}
-						: {}
-					: {};
-			const tableSchema = schema[model].fields;
-			for (const key in tableSchema) {
-				if (select.length && !select.includes(key)) {
-					continue;
-				}
-				const field = tableSchema[key];
-				if (field) {
-					transformedData[key] = data[field.fieldName || key];
-				}
-			}
-			return transformedData as any;
 		},
 		convertWhereClause(where: Where[], model: string) {
 			// const schemaModel = getSchema(model);
@@ -169,15 +127,6 @@ export const createTransform = ({
 			// if (andGroup.length) clause.push(andClause!);
 			// if (orGroup.length) clause.push(orClause!);
 			// return clause;
-		},
-		withReturning: async (
-			model: string,
-			builder: any,
-			data: Record<string, any>,
-		) => {
-			await builder;
-			const schemaModel = getSchema(getModelName(model));
-			return res;
 		},
 		getField,
 		getModelName,
