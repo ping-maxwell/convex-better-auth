@@ -1,12 +1,7 @@
-import { BetterAuthError } from "better-auth";
-import { getAuthTables } from "better-auth/db";
-import type {
-	ConvexAdapterOptions,
-	ConvexMutation,
-	ConvexQuery,
-} from "../types";
-import type { BetterAuthOptions } from "better-auth";
-import { v } from "convex/values";
+import { BetterAuthError, generateId } from "better-auth";
+import { getAuthTables, type FieldAttribute } from "better-auth/db";
+import type { ConvexAdapterOptions } from "../types";
+import type { BetterAuthOptions, Where } from "better-auth";
 import type { ConvexClient } from "convex/browser";
 
 export const createTransform = ({
@@ -28,9 +23,7 @@ export const createTransform = ({
 		return f.fieldName || field;
 	}
 
-	function db(action: "insert" | "read" | "update" | "delete") {
-
-	}
+	function db(action: "insert" | "read" | "update" | "delete") {}
 
 	function getSchema(modelName: string) {
 		const schema = config.schema || db._.fullSchema;
@@ -116,93 +109,97 @@ export const createTransform = ({
 			return transformedData as any;
 		},
 		convertWhereClause(where: Where[], model: string) {
-			const schemaModel = getSchema(model);
-			if (!where) return [];
-			if (where.length === 1) {
-				const w = where[0];
-				if (!w) {
-					return [];
-				}
-				const field = getField(model, w.field);
-				if (!schemaModel[field]) {
-					throw new BetterAuthError(
-						`The field "${w.field}" does not exist in the schema for the model "${model}". Please update your schema.`,
-					);
-				}
-				if (w.operator === "in") {
-					if (!Array.isArray(w.value)) {
-						throw new BetterAuthError(
-							`The value for the field "${w.field}" must be an array when using the "in" operator.`,
-						);
-					}
-					return [inArray(schemaModel[field], w.value)];
-				}
-
-				if (w.operator === "contains") {
-					return [like(schemaModel[field], `%${w.value}%`)];
-				}
-
-				if (w.operator === "starts_with") {
-					return [like(schemaModel[field], `${w.value}%`)];
-				}
-
-				if (w.operator === "ends_with") {
-					return [like(schemaModel[field], `%${w.value}`)];
-				}
-
-				return [eq(schemaModel[field], w.value)];
-			}
-			const andGroup = where.filter(
-				(w) => w.connector === "AND" || !w.connector,
-			);
-			const orGroup = where.filter((w) => w.connector === "OR");
-
-			const andClause = and(
-				...andGroup.map((w) => {
-					const field = getField(model, w.field);
-					if (w.operator === "in") {
-						if (!Array.isArray(w.value)) {
-							throw new BetterAuthError(
-								`The value for the field "${w.field}" must be an array when using the "in" operator.`,
-							);
-						}
-						return inArray(schemaModel[field], w.value);
-					}
-					return eq(schemaModel[field], w.value);
-				}),
-			);
-			const orClause = or(
-				...orGroup.map((w) => {
-					const field = getField(model, w.field);
-					return eq(schemaModel[field], w.value);
-				}),
-			);
-
-			const clause: SQL<unknown>[] = [];
-
-			if (andGroup.length) clause.push(andClause!);
-			if (orGroup.length) clause.push(orClause!);
-			return clause;
+			// const schemaModel = getSchema(model);
+			// if (!where) return [];
+			// if (where.length === 1) {
+			// 	const w = where[0];
+			// 	if (!w) {
+			// 		return [];
+			// 	}
+			// 	const field = getField(model, w.field);
+			// 	if (!schemaModel[field]) {
+			// 		throw new BetterAuthError(
+			// 			`The field "${w.field}" does not exist in the schema for the model "${model}". Please update your schema.`,
+			// 		);
+			// 	}
+			// 	if (w.operator === "in") {
+			// 		if (!Array.isArray(w.value)) {
+			// 			throw new BetterAuthError(
+			// 				`The value for the field "${w.field}" must be an array when using the "in" operator.`,
+			// 			);
+			// 		}
+			// 		return [inArray(schemaModel[field], w.value)];
+			// 	}
+			// 	if (w.operator === "contains") {
+			// 		return [like(schemaModel[field], `%${w.value}%`)];
+			// 	}
+			// 	if (w.operator === "starts_with") {
+			// 		return [like(schemaModel[field], `${w.value}%`)];
+			// 	}
+			// 	if (w.operator === "ends_with") {
+			// 		return [like(schemaModel[field], `%${w.value}`)];
+			// 	}
+			// 	return [eq(schemaModel[field], w.value)];
+			// }
+			// const andGroup = where.filter(
+			// 	(w) => w.connector === "AND" || !w.connector,
+			// );
+			// const orGroup = where.filter((w) => w.connector === "OR");
+			// const andClause = and(
+			// 	...andGroup.map((w) => {
+			// 		const field = getField(model, w.field);
+			// 		if (w.operator === "in") {
+			// 			if (!Array.isArray(w.value)) {
+			// 				throw new BetterAuthError(
+			// 					`The value for the field "${w.field}" must be an array when using the "in" operator.`,
+			// 				);
+			// 			}
+			// 			return inArray(schemaModel[field], w.value);
+			// 		}
+			// 		return eq(schemaModel[field], w.value);
+			// 	}),
+			// );
+			// const orClause = or(
+			// 	...orGroup.map((w) => {
+			// 		const field = getField(model, w.field);
+			// 		return eq(schemaModel[field], w.value);
+			// 	}),
+			// );
+			// const clause: SQL<unknown>[] = [];
+			// if (andGroup.length) clause.push(andClause!);
+			// if (orGroup.length) clause.push(orClause!);
+			// return clause;
 		},
 		withReturning: async (
 			model: string,
 			builder: any,
 			data: Record<string, any>,
 		) => {
-			if (config.provider !== "mysql") {
-				const c = await builder.returning();
-				return c[0];
-			}
 			await builder;
 			const schemaModel = getSchema(getModelName(model));
-			const res = await db
-				.select()
-				.from(schemaModel)
-				.where(eq(schemaModel.id, data.id));
-			return res[0];
+			return res;
 		},
 		getField,
 		getModelName,
 		db,
 	};
 };
+
+function withApplyDefault(
+	value: any,
+	field: FieldAttribute,
+	action: "create" | "update",
+) {
+	if (action === "update") {
+		return value;
+	}
+	if (value === undefined || value === null) {
+		if (field.defaultValue) {
+			if (typeof field.defaultValue === "function") {
+				return field.defaultValue();
+			}
+			return field.defaultValue;
+		}
+	}
+	return value;
+}
