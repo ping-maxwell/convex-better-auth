@@ -32,6 +32,7 @@
 		"@types/node": "^22.10.5",
 		"better-auth": "^1.1.10",
 		"convex": "^1.17.4",
+		"dotenv": "^16.4.7",
 		"typescript": "^5.7.2",
 		"vitest": "^2.1.8"
 	},
