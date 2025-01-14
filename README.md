@@ -16,7 +16,9 @@ import { convexAdapter } from "./../src";
 import { query, mutation } from "../convex/_generated/server";
 
 export const auth = betterAuth({
-  database: convexAdapter({ mutation, query }),
+  database: convexAdapter({
+    convex_url: process.env.CONVEX_URL,
+  }),
   plugins: [],
   //... other options
 });
