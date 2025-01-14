@@ -13,5 +13,7 @@ describe(`Handle Convex Adapter`, async () => {
     });
 
     expect(auth).toBeDefined();
+    expect(auth.options.database).toBeDefined();
+    expect(auth.options.database({}).id).toEqual("convex");
   });
 });
