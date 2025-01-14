@@ -5,5 +5,6 @@ export default defineSchema({
   users: defineTable({
     email: v.string(),
     username: v.string(),
+    followers: v.number(),
   }),
 });

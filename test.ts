@@ -11,7 +11,15 @@ client
     action: "query",
     value: {
       tableName: "users",
-      query: queryBuilder((q) => q.eq(q.field("email"), "test@gmail.com")),
+      query: queryBuilder((q) =>
+        q.and(
+          q.and(
+            q.eq(q.field("email"), "test@gmail.com"),
+            q.eq(q.field("username"), "John Doe")
+          ),
+          q.gt(q.field("followers"), 0)
+        )
+      ),
     },
   })
   .then(console.log);

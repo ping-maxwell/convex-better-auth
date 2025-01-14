@@ -74,10 +74,9 @@ function stringToQuery(query_string: string, query: FilterBuilder<{}>) {
 ///=============================================================================
 
 type Token = {
-  type: "function" | "string" | "parenthesis" | "comma";
+  type: "function" | "string" | "number" | "parenthesis" | "comma";
   value: string;
 };
-
 function tokenize(query_string: string): Token[] {
   const tokens: Token[] = [];
   let current = "";
@@ -102,19 +101,32 @@ function tokenize(query_string: string): Token[] {
 
     if (char === "(" || char === ")") {
       if (current) {
-        tokens.push({ type: "function", value: current.trim() });
+        // Check if the current token is a number
+        if (!isNaN(Number(current.trim()))) {
+          tokens.push({ type: "number", value: current.trim() });
+        } else {
+          tokens.push({ type: "function", value: current.trim() });
+        }
         current = "";
       }
       tokens.push({ type: "parenthesis", value: char });
     } else if (char === ",") {
       if (current) {
-        tokens.push({ type: "function", value: current.trim() });
+        if (!isNaN(Number(current.trim()))) {
+          tokens.push({ type: "number", value: current.trim() });
+        } else {
+          tokens.push({ type: "function", value: current.trim() });
+        }
         current = "";
       }
       tokens.push({ type: "comma", value: "," });
     } else if (char === " ") {
       if (current) {
-        tokens.push({ type: "function", value: current.trim() });
+        if (!isNaN(Number(current.trim()))) {
+          tokens.push({ type: "number", value: current.trim() });
+        } else {
+          tokens.push({ type: "function", value: current.trim() });
+        }
         current = "";
       }
     } else {
@@ -123,7 +135,11 @@ function tokenize(query_string: string): Token[] {
   }
 
   if (current) {
-    tokens.push({ type: "function", value: current.trim() });
+    if (!isNaN(Number(current.trim()))) {
+      tokens.push({ type: "number", value: current.trim() });
+    } else {
+      tokens.push({ type: "function", value: current.trim() });
+    }
   }
 
   return tokens;
@@ -178,6 +194,8 @@ function parseExpression(
     }
   } else if (token.type === "string") {
     return token.value;
+  } else if (token.type === "number") {
+    return Number(token.value);
   }
 
   throw new Error(`Unexpected token: ${JSON.stringify(token)}`);
