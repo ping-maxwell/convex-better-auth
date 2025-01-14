@@ -7,7 +7,14 @@ import { createTransform } from "./transform";
 export const convexAdapter =
   (config: ConvexAdapterOptions) =>
   (options: BetterAuthOptions): Adapter => {
-    const client = new ConvexClient(config.convex_url);
+    let client: ConvexClient;
+    try {
+      client = new ConvexClient(config.convex_url);
+    } catch (error) {
+      throw new Error(
+        `[ConvexAdapter] Could not connect to Convex, make sure your config.convex_url is set properly. ${error}`
+      );
+    }
 
     const { transformInput, getModelName, db } = createTransform({
       config,
