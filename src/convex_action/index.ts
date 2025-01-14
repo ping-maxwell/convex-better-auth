@@ -21,7 +21,7 @@ export type ConvexReturnType = {
     },
     Promise<any>
   >;
-  _query: RegisteredQuery<
+  query: RegisteredQuery<
     "internal",
     {
       tableName: string;
@@ -52,7 +52,7 @@ export function ConvexHandler<
   internalQuery: Query;
   internal: {
     betterAuth: {
-      _query: any;
+      query: any;
     };
   };
 }): ConvexReturnType {
@@ -60,7 +60,7 @@ export function ConvexHandler<
     args: { action: v.string(), value: v.any() },
     handler: async (ctx, args) => {
       if (args.action === "query") {
-        const data = (await ctx.runQuery(internal.betterAuth._query, {
+        const data = (await ctx.runQuery(internal.betterAuth.query, {
           query: args.value.query,
           tableName: args.value.tableName,
         })) as unknown as any;
@@ -68,7 +68,7 @@ export function ConvexHandler<
       }
     },
   });
-  const _query = internalQuery({
+  const query = internalQuery({
     args: {
       tableName: v.string(),
       query: v.optional(v.any()),
@@ -105,5 +105,5 @@ export function ConvexHandler<
     },
   });
 
-  return { betterAuth, _query };
+  return { betterAuth, query };
 }
