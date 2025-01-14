@@ -7,6 +7,7 @@ import type {
 export type ConvexQuery = QueryBuilder<AnyDataModel, "public">;
 
 export type ConvexAdapterOptions = {
+	convex_url: string;
 	convex_dir_path?: string;
 	usePlural?: boolean;
 	schema?: Record<string, any>;

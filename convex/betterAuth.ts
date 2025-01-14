@@ -1,7 +1,8 @@
 import { action, internalQuery } from "./_generated/server";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import { Expression, FilterBuilder } from "convex/server";
+import { ConvexHttpClient } from "convex/browser";
 
 export const betterAuth = action({
   args: { action: v.string(), value: v.any() },
@@ -195,3 +196,5 @@ function parseExpression(
 
   throw new Error(`Unexpected token: ${JSON.stringify(token)}`);
 }
+
+// =============================================================================
