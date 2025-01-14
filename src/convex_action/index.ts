@@ -34,15 +34,8 @@ export type ConvexReturnType = {
 };
 
 export function ConvexHandler<
-  DataModel extends GenericDataModel,
-  Action extends ActionBuilder<DataModel, "public"> = ActionBuilder<
-    DataModel,
-    "public"
-  >,
-  Query extends QueryBuilder<DataModel, "internal"> = QueryBuilder<
-    DataModel,
-    "internal"
-  >,
+  Action extends ActionBuilder<any, "public"> = ActionBuilder<{}, "public">,
+  Query extends QueryBuilder<any, "internal"> = QueryBuilder<{}, "internal">,
 >({
   action,
   internalQuery,
@@ -54,7 +47,7 @@ export function ConvexHandler<
     betterAuth: {
       query: any;
     };
-  };
+  } & Record<string, any>;
 }): ConvexReturnType {
   const betterAuth = action({
     args: { action: v.string(), value: v.any() },
