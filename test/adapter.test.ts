@@ -17,5 +17,4 @@ describe(`Handle Convex Adapter`, async () => {
     expect(auth.options.database({}).id).toEqual("convex");
   });
 
-  it(``)
 });

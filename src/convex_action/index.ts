@@ -1,6 +1,5 @@
 import type {
   ActionBuilder,
-  GenericDataModel,
   QueryBuilder,
   RegisteredAction,
   RegisteredQuery,

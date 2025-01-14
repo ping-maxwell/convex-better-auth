@@ -3,6 +3,7 @@ import type { Adapter, BetterAuthOptions } from "better-auth";
 import type { ConvexAdapterOptions } from "./types";
 import { generateSchema } from "./generate-schema";
 import { createTransform } from "./transform";
+import { anyApi } from "convex/server";
 
 export * from "./convex_action/index";
 
@@ -17,7 +18,6 @@ export const convexAdapter =
         `[ConvexAdapter] Could not connect to Convex, make sure your config.convex_url is set properly. ${error}`
       );
     }
-
     const { transformInput, getModelName, db } = createTransform({
       config,
       options,
