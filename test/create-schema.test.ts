@@ -255,4 +255,48 @@ describe(`Handle schema generation`, async () => {
 
 		expect(generate_schema).toBe(hard_coded_schema);
 	});
+
+	
+
+
+	it("should should support .index method after `defineTable`", async () => {
+		const generate_schema = await generateSchema(
+			[
+				{
+					schema: {
+						testTable: {
+							fields: {
+								
+							},
+						},
+					},
+					id: "test",
+				},
+			],
+			{
+				convex_dir_path: CONVEX_TEST_DIR_PATH3,
+			},
+		);
+
+		const hard_coded_schema = await format(
+			[
+				`import {defineSchema,defineTable} from "convex/server";`,
+				`import {v} from "convex/values";`,
+				``,
+				`export default defineSchema({`,
+				`testTable: defineTable({`,
+				`}).index("by_something", ["email"]),`,
+				`});`,
+			].join("\n"),
+			{ filepath: "schema.ts" },
+		);
+
+		console.log(`\n\n\n--------------------------------- Generated:`);
+		console.log(generate_schema);
+		console.log(`--------------------------------- Hard-coded:`);
+		console.log(hard_coded_schema);
+		console.log(`---------------------------------\n\n\n`);
+
+		expect(generate_schema).toBe(hard_coded_schema);
+	});
 });
