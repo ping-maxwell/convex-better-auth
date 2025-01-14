@@ -4,6 +4,8 @@ import type { ConvexAdapterOptions } from "./types";
 import { generateSchema } from "./generate-schema";
 import { createTransform } from "./transform";
 
+export * from "./convex_action/index";
+
 export const convexAdapter =
   (config: ConvexAdapterOptions) =>
   (options: BetterAuthOptions): Adapter => {
