@@ -62,7 +62,7 @@ export const _BA_readData = internalQuery({
 export type QueryFilter = (q: FilterBuilder<{}>) => Expression<boolean>;
 
 export function queryBuilder(cb: QueryFilter) {
-  return cb.toString().replace("(q) => ", "");
+  return cb.toString().split(`=>`)[1].trimStart();
 }
 
 //@ts-ignore
