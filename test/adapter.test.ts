@@ -8,7 +8,7 @@ describe(`Handle Convex Adapter`, async () => {
   it(`should successfully add the Convex Adapter`, async () => {
     const auth = betterAuth({
       database: convexAdapter({
-        convex_url: process.env.CONVEX_URL2 as string,
+        convex_url: process.env.CONVEX_URL as string,
       }),
     });
 
