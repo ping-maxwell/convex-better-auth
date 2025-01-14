@@ -49,11 +49,7 @@ export const createTransform = ({
   }
 
   const getModelName = (model: string) => {
-    return schema[model].modelName !== model
-      ? schema[model].modelName
-      : config.usePlural
-        ? `${model}s`
-        : model;
+    return schema[model].modelName !== model ? schema[model].modelName : model;
   };
 
   const useDatabaseGeneratedId = options?.advanced?.generateId === false;
