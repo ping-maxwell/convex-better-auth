@@ -1,9 +1,4 @@
-import {
-  action,
-  internalAction,
-  internalQuery,
-  query,
-} from "./_generated/server";
+import { action, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { Expression, FilterBuilder } from "convex/server";
@@ -12,7 +7,7 @@ export const betterAuth = action({
   args: { action: v.string(), value: v.any() },
   handler: async (ctx, args) => {
     if (args.action === "query") {
-      const data = (await ctx.runQuery(internal.betterAuth._BA_readData, {
+      const data = (await ctx.runQuery(internal.betterAuth._query, {
         query: args.value.query,
         tableName: args.value.tableName,
       })) as unknown as any;
@@ -21,7 +16,7 @@ export const betterAuth = action({
   },
 });
 
-export const _BA_readData = internalQuery({
+export const _query = internalQuery({
   args: {
     tableName: v.string(),
     query: v.optional(v.any()),
