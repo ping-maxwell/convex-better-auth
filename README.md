@@ -12,8 +12,7 @@ npm install convex-database-adapter
 
 ```ts
 import { betterAuth } from "better-auth";
-import { convexAdapter } from "./../src";
-import { query, mutation } from "../convex/_generated/server";
+import { convexAdapter } from "convex-better-auth";
 
 export const auth = betterAuth({
   database: convexAdapter({
