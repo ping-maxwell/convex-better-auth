@@ -12,7 +12,7 @@ import { type QueryFilter, stringToQuery } from "./helpers";
 import type { Id } from "node_modules/convex/dist/esm-types/values/value";
 
 export function queryBuilder(cb: QueryFilter) {
-  return cb.toString().split(`=>`)[1].trimStart();
+  return cb.toString().split("=>")[1].trimStart();
 }
 
 export type ConvexReturnType = {

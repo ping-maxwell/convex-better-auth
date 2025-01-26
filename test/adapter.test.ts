@@ -5,8 +5,8 @@ dotenv.config({ path: ".env.local" });
 import { convexAdapter } from "./../src/index";
 import { runAdapterTest } from "better-auth/adapters/test";
 
-describe(`Handle Convex Adapter`, async () => {
-  it(`should successfully add the Convex Adapter`, async () => {
+describe("Handle Convex Adapter", async () => {
+  it("should successfully add the Convex Adapter", async () => {
     const auth = betterAuth({
       database: convexAdapter({
         convex_url: process.env.CONVEX_URL as string,
@@ -18,7 +18,7 @@ describe(`Handle Convex Adapter`, async () => {
     expect(auth.options.database({}).id).toEqual("convex");
   });
 });
-describe(`Run BetterAuth Adapter tests`, async () => {
+describe("Run BetterAuth Adapter tests", async () => {
   const mysqlAdapter = convexAdapter({
     convex_url: process.env.CONVEX_URL as string,
   });

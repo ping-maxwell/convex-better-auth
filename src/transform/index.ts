@@ -1,7 +1,7 @@
 import { generateId } from "better-auth";
 import { getAuthTables, type FieldAttribute } from "better-auth/db";
 import type { ConvexAdapterOptions } from "../types";
-import type { BetterAuthOptions, Where } from "better-auth";
+import type { BetterAuthOptions } from "better-auth";
 import type { ConvexClient } from "convex/browser";
 import { anyApi } from "convex/server";
 
