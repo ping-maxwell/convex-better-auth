@@ -1,11 +1,15 @@
-import type {
-  ActionBuilder,
-  QueryBuilder,
-  RegisteredAction,
-  RegisteredQuery,
+import {
+  anyApi,
+  mutationGeneric,
+  type ActionBuilder,
+  type QueryBuilder,
+  type RegisteredAction,
+  type RegisteredMutation,
+  type RegisteredQuery,
 } from "convex/server";
 import { v } from "convex/values";
 import { type QueryFilter, stringToQuery } from "./helpers";
+import type { Id } from "node_modules/convex/dist/esm-types/values/value";
 
 export function queryBuilder(cb: QueryFilter) {
   return cb.toString().split(`=>`)[1].trimStart();
@@ -30,6 +34,14 @@ export type ConvexReturnType = {
     },
     Promise<any>
   >;
+  insert: RegisteredMutation<
+    "public",
+    {
+      tableName: string;
+      values: Record<string, any>;
+    },
+    Promise<Id<string>>
+  >;
 };
 
 export function ConvexHandler<
@@ -48,6 +60,21 @@ export function ConvexHandler<
     };
   } & Record<string, any>;
 }): ConvexReturnType {
+  const insert = mutationGeneric({
+    args: {
+      tableName: v.string(),
+      values: v.any(),
+    },
+    handler: async (
+      ctx,
+      args: {
+        tableName: string;
+        values: Record<string, any>;
+      },
+    ) => {
+      return await ctx.db.insert(args.tableName, args.values);
+    },
+  });
   const betterAuth = action({
     args: { action: v.string(), value: v.any() },
     handler: async (ctx, args) => {
@@ -56,6 +83,13 @@ export function ConvexHandler<
           query: args.value.query,
           tableName: args.value.tableName,
         })) as unknown as any;
+        return data;
+      }
+      if (args.action === "insert") {
+        const data = await ctx.runMutation(anyApi.betterAuth.insert, {
+          tableName: args.value.tableName,
+          values: args.value.values,
+        });
         return data;
       }
     },
@@ -80,7 +114,7 @@ export function ConvexHandler<
         query?: string;
         order?: "asc" | "desc";
         single?: boolean;
-      }
+      },
     ) => {
       const query = ctx.db
         //@ts-ignore
@@ -97,5 +131,5 @@ export function ConvexHandler<
     },
   });
 
-  return { betterAuth, query };
+  return { betterAuth, query, insert };
 }

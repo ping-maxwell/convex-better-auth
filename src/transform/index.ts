@@ -12,10 +12,22 @@ export function queryDb(
     query?: string;
     order?: "asc" | "desc";
     single?: boolean;
-  }
+  },
 ) {
   return client.action(anyApi.betterAuth.betterAuth, {
     action: "query",
+    value: args,
+  });
+}
+export function insertDb(
+  client: ConvexClient,
+  args: {
+    tableName: string;
+    values: Record<string, any>;
+  },
+) {
+  return client.action(anyApi.betterAuth.betterAuth, {
+    action: "insert",
     value: args,
   });
 }
@@ -39,10 +51,45 @@ export const createTransform = ({
     return f.fieldName || field;
   }
 
-  function db(action: "insert" | "read" | "update" | "delete") {
-    if (action === "read") {
+  type DbWrite = {
+    action: "write";
+    tableName: string;
+    values: Record<string, any>;
+  };
+
+  type DbRead = {
+    action: "read";
+    tableName: string;
+    query?: string;
+    order?: "asc" | "desc";
+    single?: boolean;
+  };
+
+  type DbDelete = {
+    action: "delete";
+    tableName: string;
+    query?: string;
+  };
+
+  function db(options: DbWrite | DbRead | DbDelete) {
+    if (options.action === "read") {
       return queryDb(client, {
-        tableName: "users",
+        tableName: options.tableName,
+        order: options.order,
+        query: options.query,
+        single: options.single,
+      });
+    }
+    if (options.action === "write") {
+      return insertDb(client, {
+        tableName: options.tableName,
+        values: options.values,
+      });
+    }
+    if (options.action === "delete") {
+      return queryDb(client, {
+        tableName: options.tableName,
+        query: options.query,
       });
     }
     return "";
@@ -57,7 +104,7 @@ export const createTransform = ({
     transformInput(
       data: Record<string, any>,
       model: string,
-      action: "create" | "update"
+      action: "create" | "update",
     ) {
       const transformedData: Record<string, any> =
         useDatabaseGeneratedId || action === "update"
@@ -78,8 +125,13 @@ export const createTransform = ({
         transformedData[fields[field].fieldName || field] = withApplyDefault(
           value,
           fields[field],
-          action
+          action,
         );
+      }
+      for (const field in transformedData) {
+        if (transformedData[field] instanceof Date) {
+          transformedData[field] = transformedData[field].toISOString();
+        }
       }
       return transformedData;
     },
@@ -92,7 +144,7 @@ export const createTransform = ({
 function withApplyDefault(
   value: any,
   field: FieldAttribute,
-  action: "create" | "update"
+  action: "create" | "update",
 ) {
   if (action === "update") return value;
   if (value === undefined || value === null) {

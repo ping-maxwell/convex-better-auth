@@ -31,7 +31,7 @@ describe(`Handle schema generation`, async () => {
       ],
       {
         convex_dir_path: CONVEX_TEST_DIR_PATH,
-      }
+      },
     );
 
     const hard_coded_schema = await format(
@@ -53,7 +53,7 @@ describe(`Handle schema generation`, async () => {
         `}),`,
         `});`,
       ].join("\n"),
-      { filepath: "schema.ts" }
+      { filepath: "schema.ts" },
     );
 
     if (generate_schema !== hard_coded_schema) {
@@ -87,7 +87,7 @@ describe(`Handle schema generation`, async () => {
       ],
       {
         convex_dir_path: CONVEX_TEST_DIR_PATH2,
-      }
+      },
     );
 
     const hard_coded_schema = await format(
@@ -107,7 +107,7 @@ describe(`Handle schema generation`, async () => {
         `}),`,
         `});`,
       ].join("\n"),
-      { filepath: "schema.ts" }
+      { filepath: "schema.ts" },
     );
 
     if (generate_schema !== hard_coded_schema) {
@@ -164,7 +164,7 @@ describe(`Handle schema generation`, async () => {
       ],
       {
         convex_dir_path: CONVEX_TEST_DIR_PATH3,
-      }
+      },
     );
 
     const hard_coded_schema = await format(
@@ -185,7 +185,7 @@ describe(`Handle schema generation`, async () => {
         `}),`,
         `});`,
       ].join("\n"),
-      { filepath: "schema.ts" }
+      { filepath: "schema.ts" },
     );
 
     if (generate_schema !== hard_coded_schema) {
@@ -213,7 +213,7 @@ describe(`Handle schema generation`, async () => {
       ],
       {
         convex_dir_path: CONVEX_TEST_DIR_PATH3,
-      }
+      },
     );
 
     const hard_coded_schema = await format(
@@ -226,7 +226,7 @@ describe(`Handle schema generation`, async () => {
         `}).index("by_something", ["email"]),`,
         `});`,
       ].join("\n"),
-      { filepath: "schema.ts" }
+      { filepath: "schema.ts" },
     );
 
     if (generate_schema !== hard_coded_schema) {
@@ -274,7 +274,7 @@ describe(`Handle schema generation`, async () => {
       ],
       {
         convex_dir_path: CONVEX_TEST_DIR_PATH3,
-      }
+      },
     );
 
     const hard_coded_schema = await format(
@@ -290,7 +290,7 @@ describe(`Handle schema generation`, async () => {
         `}),`,
         `});`,
       ].join("\n"),
-      { filepath: "schema.ts" }
+      { filepath: "schema.ts" },
     );
 
     if (generate_schema !== hard_coded_schema) {

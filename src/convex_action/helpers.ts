@@ -1,4 +1,3 @@
-
 //@ts-ignore
 export type QueryFilter = (q: FilterBuilder<{}>) => Expression<boolean>;
 //@ts-ignore
@@ -83,7 +82,7 @@ function parseExpression(
   tokens: Token[],
   index: { value: number },
   //@ts-ignore
-  query: FilterBuilder<{}>
+  query: FilterBuilder<{}>,
 ): any {
   if (index.value >= tokens.length) {
     throw new Error("Unexpected end of input");
