@@ -2,6 +2,9 @@
 
 This is a database adapter for [Convex](https://www.convex.dev/) that allows you to use [BetterAuth](https://www.better-auth.com/) with Convex.
 
+> [!CAUTION]
+> This library is still in development and is not yet ready for production use.
+
 ## Installation
 
 ```bash
