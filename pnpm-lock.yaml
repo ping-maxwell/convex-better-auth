@@ -22,8 +22,8 @@ importers:
         specifier: ^22.10.5
         version: 22.10.5
       better-auth:
-        specifier: ^1.1.10
-        version: 1.1.10
+        specifier: ^1.1.14
+        version: 1.1.14
       convex:
         specifier: ^1.17.4
         version: 1.17.4
@@ -651,8 +651,8 @@ packages:
     resolution: {integrity: sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==}
     engines: {node: '>=12'}
 
-  better-auth@1.1.10:
-    resolution: {integrity: sha512-glVx/Kd08nupFlXO2+bN6pYMoK2Y7rr04Jrix45S9dLr+sTQw/ysVNW/88Nf+Q/VoAL8MuXaUxTP3PhFYrlBBg==}
+  better-auth@1.1.14:
+    resolution: {integrity: sha512-DnGHPxRLIQFGyqvPPXbudiD3sI+04BU0hiNnnoQaXg//JZSxdfBs/YbNx3ccVWz6aFt/XL6WtrxXDyUPCC1qrQ==}
 
   better-call@0.3.3:
     resolution: {integrity: sha512-N4lDVm0NGmFfDJ0XMQ4O83Zm/3dPlvIQdxvwvgSLSkjFX5PM4GUYSVAuxNzXN27QZMHDkrJTWUqxBrm4tPC3eA==}
@@ -896,6 +896,10 @@ packages:
     resolution: {integrity: sha512-WNLf5Sd8oZxOm+TzppcYk8gVOgP+l58xNy58D0nbUnOxOWRWvlcCV4kUF7ltmI6PsrLl/BgKEyS4mqsGChFN0w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
+
+  nanostores@0.11.3:
+    resolution: {integrity: sha512-TUes3xKIX33re4QzdxwZ6tdbodjmn3tWXCEc1uokiEmo14sI1EaGYNs2k3bU2pyyGNmBqFGAVl6jAGWd06AVIg==}
+    engines: {node: ^18.0.0 || >=20.0.0}
 
   node-fetch@2.7.0:
     resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
@@ -1742,7 +1746,7 @@ snapshots:
 
   assertion-error@2.0.1: {}
 
-  better-auth@1.1.10:
+  better-auth@1.1.14:
     dependencies:
       '@better-auth/utils': 0.2.3
       '@better-fetch/fetch': 1.1.12
@@ -1754,7 +1758,7 @@ snapshots:
       defu: 6.1.4
       jose: 5.9.6
       kysely: 0.27.5
-      uncrypto: 0.1.3
+      nanostores: 0.11.3
       zod: 3.24.1
     transitivePeerDependencies:
       - encoding
@@ -2014,6 +2018,8 @@ snapshots:
   ms@2.1.3: {}
 
   nanoid@3.3.8: {}
+
+  nanostores@0.11.3: {}
 
   node-fetch@2.7.0:
     dependencies:
