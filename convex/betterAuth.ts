@@ -9,6 +9,4 @@ const { betterAuth, query, insert } = ConvexHandler({
   internal,
 }) as ConvexReturnType;
 
-console.log("test", internal);
-
 export { betterAuth, query, insert };

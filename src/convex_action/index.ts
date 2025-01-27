@@ -81,10 +81,10 @@ export function ConvexHandler<
             tableName: args.value.tableName,
             values: args.value.values,
           });
-          return args.value.values;
         } catch (error) {
           return error;
         }
+        return args.value.values;
       }
     },
   });

@@ -27,12 +27,12 @@ export const convexAdapter =
       id: "convex",
       async create({ data: values, model, select }) {
         const transformed = transformInput(values, model, "create");
-        const res = db({
+        const res = await db({
           action: "write",
           tableName: model,
           values: transformed,
         });
-        return res as any;
+        return res;
       },
       //@ts-expect-error - will be fixed in the next version of better-auth
       createSchema(options, file) {

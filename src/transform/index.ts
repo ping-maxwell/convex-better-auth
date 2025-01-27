@@ -30,7 +30,7 @@ export async function insertDb(
     action: "insert",
     value: args,
   });
-  return call.values;
+  return call;
 }
 
 export const createTransform = ({
