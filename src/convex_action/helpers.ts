@@ -1,3 +1,6 @@
+import type { FilterBuilder } from "convex/server";
+import type { Expression } from "convex/server";
+
 //@ts-ignore
 export type QueryFilter = (q: FilterBuilder<{}>) => Expression<boolean>;
 //@ts-ignore

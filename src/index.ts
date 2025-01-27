@@ -34,6 +34,9 @@ export const convexAdapter =
         });
         return res;
       },
+      findOne: async ({ model, where, select }) => {
+        console.log(model, where, select);
+      },
       //@ts-expect-error - will be fixed in the next version of better-auth
       createSchema(options, file) {
         const code = generateSchema(options.plugins || []);
