@@ -1,10 +1,34 @@
-import { ConvexHttpClient } from "convex/browser";
+import { ConvexClient } from "convex/browser";
 import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
-import { queryBuilder, queryDb } from "./convex/betterAuth.js";
+import { insertDb, queryDb } from "./src/transform";
 
-const client = new ConvexHttpClient(process.env.CONVEX_URL as string);
+const client = new ConvexClient(process.env.CONVEX_URL as string);
 
-queryDb(client, {
-  tableName: "users",
-}).then(console.log);
+query();
+insert();
+
+function query() {
+  console.time("query");
+  queryDb(client, {
+    tableName: "users",
+  }).then((res) => {
+    console.log(res);
+    console.timeEnd("query");
+  });
+}
+
+function insert() {
+  console.time("insert");
+  insertDb(client, {
+    tableName: "user",
+    values: {
+      email: "test@test.com",
+      username: "test",
+      followers: 10,
+    },
+  }).then((res) => {
+    console.log(res);
+    console.timeEnd("insert");
+  });
+}

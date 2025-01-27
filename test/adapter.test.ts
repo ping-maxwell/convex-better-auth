@@ -18,6 +18,8 @@ describe("Handle Convex Adapter", async () => {
     expect(auth.options.database({}).id).toEqual("convex");
   });
 });
+
+
 describe("Run BetterAuth Adapter tests", async () => {
   const mysqlAdapter = convexAdapter({
     convex_url: process.env.CONVEX_URL as string,

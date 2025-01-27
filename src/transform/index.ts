@@ -5,7 +5,7 @@ import type { BetterAuthOptions } from "better-auth";
 import type { ConvexClient } from "convex/browser";
 import { anyApi } from "convex/server";
 
-export function queryDb(
+export async function queryDb(
   client: ConvexClient,
   args: {
     tableName: string;
@@ -14,22 +14,23 @@ export function queryDb(
     single?: boolean;
   },
 ) {
-  return client.action(anyApi.betterAuth.betterAuth, {
+  return await client.action(anyApi.betterAuth.betterAuth, {
     action: "query",
     value: args,
   });
 }
-export function insertDb(
+export async function insertDb(
   client: ConvexClient,
   args: {
     tableName: string;
     values: Record<string, any>;
   },
 ) {
-  return client.action(anyApi.betterAuth.betterAuth, {
+  const call = await client.action(anyApi.betterAuth.betterAuth, {
     action: "insert",
     value: args,
   });
+  return call.values;
 }
 
 export const createTransform = ({
@@ -71,9 +72,9 @@ export const createTransform = ({
     query?: string;
   };
 
-  function db(options: DbWrite | DbRead | DbDelete) {
+  async function db(options: DbWrite | DbRead | DbDelete) {
     if (options.action === "read") {
-      return queryDb(client, {
+      return await queryDb(client, {
         tableName: options.tableName,
         order: options.order,
         query: options.query,
@@ -81,16 +82,13 @@ export const createTransform = ({
       });
     }
     if (options.action === "write") {
-      return insertDb(client, {
+      return await insertDb(client, {
         tableName: options.tableName,
         values: options.values,
       });
     }
     if (options.action === "delete") {
-      return queryDb(client, {
-        tableName: options.tableName,
-        query: options.query,
-      });
+      return "not implemented";
     }
     return "";
   }

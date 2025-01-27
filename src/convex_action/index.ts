@@ -1,15 +1,13 @@
-import {
-  anyApi,
-  mutationGeneric,
-  type ActionBuilder,
-  type QueryBuilder,
-  type RegisteredAction,
-  type RegisteredMutation,
-  type RegisteredQuery,
+import type {
+  ActionBuilder,
+  MutationBuilder,
+  QueryBuilder,
+  RegisteredAction,
+  RegisteredMutation,
+  RegisteredQuery,
 } from "convex/server";
 import { v } from "convex/values";
 import { type QueryFilter, stringToQuery } from "./helpers";
-import type { Id } from "node_modules/convex/dist/esm-types/values/value";
 
 export function queryBuilder(cb: QueryFilter) {
   return cb.toString().split("=>")[1].trimStart();
@@ -35,46 +33,38 @@ export type ConvexReturnType = {
     Promise<any>
   >;
   insert: RegisteredMutation<
-    "public",
+    "internal",
     {
       tableName: string;
       values: Record<string, any>;
     },
-    Promise<Id<string>>
+    Promise<any>
   >;
 };
 
 export function ConvexHandler<
   Action extends ActionBuilder<any, "public"> = ActionBuilder<{}, "public">,
   Query extends QueryBuilder<any, "internal"> = QueryBuilder<{}, "internal">,
+  Mutation extends MutationBuilder<any, "internal"> = MutationBuilder<
+    {},
+    "internal"
+  >,
 >({
   action,
   internalQuery,
+  internalMutation,
   internal,
 }: {
   action: Action;
   internalQuery: Query;
+  internalMutation: Mutation;
   internal: {
     betterAuth: {
       query: any;
+      insert: any;
     };
   } & Record<string, any>;
 }): ConvexReturnType {
-  const insert = mutationGeneric({
-    args: {
-      tableName: v.string(),
-      values: v.any(),
-    },
-    handler: async (
-      ctx,
-      args: {
-        tableName: string;
-        values: Record<string, any>;
-      },
-    ) => {
-      return await ctx.db.insert(args.tableName, args.values);
-    },
-  });
   const betterAuth = action({
     args: { action: v.string(), value: v.any() },
     handler: async (ctx, args) => {
@@ -86,7 +76,7 @@ export function ConvexHandler<
         return data;
       }
       if (args.action === "insert") {
-        const data = await ctx.runMutation(anyApi.betterAuth.insert, {
+        const data = await ctx.runMutation(internal.betterAuth.insert, {
           tableName: args.value.tableName,
           values: args.value.values,
         });
@@ -128,6 +118,22 @@ export function ConvexHandler<
 
       if (args.single) return await query.first();
       return await query.collect();
+    },
+  });
+
+  const insert = internalMutation({
+    args: {
+      tableName: v.string(),
+      values: v.any(),
+    },
+    handler: async (
+      ctx,
+      args: {
+        tableName: string;
+        values: Record<string, any>;
+      },
+    ) => {
+      return await ctx.db.insert(args.tableName, args.values);
     },
   });
 

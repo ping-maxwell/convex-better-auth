@@ -29,10 +29,7 @@
         "noEmptyPattern": "off"
       },
       "style": {
-        "noUnusedTemplateLiteral": {
-          "fix": "safe",
-          "level": "warn"
-        },
+        "noUnusedTemplateLiteral": "off",
         "noNonNullAssertion": "off",
         "noParameterAssign": "off"
       },

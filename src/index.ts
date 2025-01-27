@@ -26,7 +26,6 @@ export const convexAdapter =
     return {
       id: "convex",
       async create({ data: values, model, select }) {
-        console.log(values, model, select);
         const transformed = transformInput(values, model, "create");
         const res = db({
           action: "write",
