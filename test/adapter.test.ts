@@ -1,9 +1,11 @@
 import { betterAuth } from "better-auth";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 import { convexAdapter } from "./../src/index";
 import { runAdapterTest } from "better-auth/adapters/test";
+import { ConvexClient } from "convex/browser";
+import { api } from "./../convex/_generated/api.js";
 
 describe("Handle Convex Adapter", async () => {
   it("should successfully add the Convex Adapter", async () => {
@@ -19,14 +21,18 @@ describe("Handle Convex Adapter", async () => {
   });
 });
 
-
 describe("Run BetterAuth Adapter tests", async () => {
-  const mysqlAdapter = convexAdapter({
+  beforeAll(async () => {
+    const client = new ConvexClient(process.env.CONVEX_URL as string);
+    await client.mutation(api.tests.removeAll, {});
+  });
+
+  const adapter = convexAdapter({
     convex_url: process.env.CONVEX_URL as string,
   });
   await runAdapterTest({
     getAdapter: async (customOptions = {}) => {
-      return mysqlAdapter({ ...customOptions });
+      return adapter({ ...customOptions });
     },
   });
 });

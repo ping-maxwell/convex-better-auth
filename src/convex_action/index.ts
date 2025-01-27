@@ -76,11 +76,15 @@ export function ConvexHandler<
         return data;
       }
       if (args.action === "insert") {
-        const data = await ctx.runMutation(internal.betterAuth.insert, {
-          tableName: args.value.tableName,
-          values: args.value.values,
-        });
-        return data;
+        try {
+          await ctx.runMutation(internal.betterAuth.insert, {
+            tableName: args.value.tableName,
+            values: args.value.values,
+          });
+          return args.value.values;
+        } catch (error) {
+          return error;
+        }
       }
     },
   });
