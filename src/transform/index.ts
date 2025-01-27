@@ -12,6 +12,8 @@ export async function queryDb(
     query?: string;
     order?: "asc" | "desc";
     single?: boolean;
+    limit?: number;
+    offset?: number;
   },
 ) {
   return await client.action(anyApi.betterAuth.betterAuth, {
@@ -78,6 +80,8 @@ export const createTransform = ({
     query?: string;
     order?: "asc" | "desc";
     single?: boolean;
+    limit?: number;
+    offset?: number;
   };
 
   type DbDelete = {
@@ -100,6 +104,8 @@ export const createTransform = ({
         order: options.order,
         query: options.query,
         single: options.single,
+        limit: options.limit,
+        offset: options.offset,
       });
     }
     if (options.action === "insert") {
@@ -157,6 +163,8 @@ export const createTransform = ({
       for (const field in transformedData) {
         if (field === "id") {
           delete transformedData[field];
+        } else if (field === "createdAt") {
+          delete transformedData[field];
         } else if (transformedData[field] instanceof Date) {
           transformedData[field] = transformedData[field].toISOString();
         }
@@ -167,6 +175,9 @@ export const createTransform = ({
       for (const field in data) {
         if (field === "_id") {
           data.id = data[field];
+          delete data[field];
+        } else if (field === "_creationTime") {
+          data.createdAt = data[field];
           delete data[field];
         }
       }

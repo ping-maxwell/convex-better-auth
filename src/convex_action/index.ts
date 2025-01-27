@@ -7,25 +7,36 @@ import type {
   RegisteredQuery,
 } from "convex/server";
 import { v } from "convex/values";
-import { type QueryFilter, stringToQuery } from "./helpers";
+import { stringToQuery } from "./helpers";
+
+function replaceFields(key: string) {
+  switch (key) {
+    case "id":
+      return "_id";
+    case "createdAt":
+      return "_creationTime";
+    default:
+      return key;
+  }
+}
 
 const q_ = {
   eq: (key: string, value: any) =>
-    `q.eq(q.field("${key}"), ${JSON.stringify(value)})`,
+    `q.eq(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
   add: (key: string, value: any) =>
-    `q.add(q.field("${key}"), ${JSON.stringify(value)})`,
+    `q.add(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
   gt: (key: string, value: any) =>
-    `q.gt(q.field("${key}"), ${JSON.stringify(value)})`,
+    `q.gt(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
   lt: (key: string, value: any) =>
-    `q.lt(q.field("${key}"), ${JSON.stringify(value)})`,
+    `q.lt(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
   gte: (key: string, value: any) =>
-    `q.gte(q.field("${key}"), ${JSON.stringify(value)})`,
+    `q.gte(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
   lte: (key: string, value: any) =>
-    `q.lte(q.field("${key}"), ${JSON.stringify(value)})`,
+    `q.lte(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
   in: (key: string, value: any) =>
-    `q.in(q.field("${key}"), ${JSON.stringify(value)})`,
+    `q.in(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
   not: (key: string, value: any) =>
-    `q.not(q.field("${key}"), ${JSON.stringify(value)})`,
+    `q.not(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
   and: (...args: any[]) => `q.and(${args.join(", ")})`,
   or: (...args: any[]) => `q.or(${args.join(", ")})`,
 };
@@ -49,6 +60,8 @@ export type ConvexReturnType = {
       query?: string;
       order?: "asc" | "desc";
       single?: boolean;
+      limit?: number;
+      offset?: number;
     },
     Promise<any>
   >;
@@ -99,9 +112,14 @@ export function ConvexHandler<
     args: { action: v.string(), value: v.any() },
     handler: async (ctx, args) => {
       if (args.action === "query") {
+        console.log(`Query:`, args.value);
         const data = (await ctx.runQuery(internal.betterAuth.query, {
           query: args.value.query,
           tableName: args.value.tableName,
+          limit: args.value.limit,
+          offset: args.value.offset,
+          order: args.value.order,
+          single: args.value.single,
         })) as unknown as any;
         return data;
       }
@@ -141,6 +159,8 @@ export function ConvexHandler<
        * Only get the first.
        */
       single: v.optional(v.boolean()),
+      limit: v.optional(v.number()),
+      offset: v.optional(v.number()),
     },
     handler: async (
       ctx,
@@ -149,19 +169,46 @@ export function ConvexHandler<
         query?: string;
         order?: "asc" | "desc";
         single?: boolean;
+        offset?: number;
+        limit?: number;
       },
     ) => {
       const query = ctx.db
-        //@ts-ignore
         .query(args.tableName)
         .order(args.order || "asc")
-        //@ts-ignore
         .filter((q) => {
           if (!args.query) return true;
           return stringToQuery(args.query, q);
         });
+      if (typeof args.offset === "number") {
+        args.offset = args.offset || 0;
+        let continueCursor = null;
+        let isDone = false;
+        let page: any;
 
-      if (args.single) return await query.first();
+        const results = [];
+        let offsetCount = -1;
+        while (!isDone) {
+          offsetCount++;
+          ({ continueCursor, isDone, page } = await query.paginate({
+            cursor: continueCursor,
+            numItems: args.limit ?? 100,
+          }));
+          console.log("got", page.length);
+          if (offsetCount === args.offset) {
+            results.push(...page);
+            if (results.length === args.limit) {
+              isDone = true;
+              return results;
+            }
+          }
+        }
+      } else if (typeof args.single === "boolean" && args.single === true) {
+        return await query.first();
+      }
+      if (typeof args.limit === "number") {
+        return await query.take(args.limit);
+      }
       return await query.collect();
     },
   });

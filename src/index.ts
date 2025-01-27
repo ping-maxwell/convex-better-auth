@@ -37,20 +37,18 @@ export const convexAdapter =
         return transformOutput(res) as any;
       },
       findOne: async ({ model, where, select }) => {
-        // console.log(`FindOne:`, { model, where, select });
-        const res = (
-          await db({
-            action: "query",
-            tableName: model,
-            query: queryBuilder((q) => {
-              const eqs = where.map((w) =>
-                q.eq(w.field === "id" ? "_id" : w.field, w.value),
-              );
-              return eqs.reduce((acc, cur) => q.and(acc, cur));
-            }),
-            single: true,
-          })
-        )[0];
+        console.log(`FindOne:`, { model, where, select });
+        const res = await db({
+          action: "query",
+          tableName: model,
+          query: queryBuilder((q) => {
+            const eqs = where.map((w) =>
+              q.eq(w.field === "id" ? "_id" : w.field, w.value),
+            );
+            return eqs.reduce((acc, cur) => q.and(acc, cur));
+          }),
+          single: true,
+        });
 
         let result: Record<string, any> | null = null;
 
@@ -61,25 +59,44 @@ export const convexAdapter =
             result[key] = res[key];
           }
         }
+        console.log(`Result:`, result);
 
         return result as any;
       },
       update: async ({ model, where, update }) => {
-        console.log(`Update:`, { model, where, update });
+        // console.log(`Update:`, { model, where, update });
         const transformed = transformInput(update, model, "update");
         const res = await db({
           action: "update",
           tableName: model,
           query: queryBuilder((q) => {
-            const eqs = where.map((w) =>
-              q.eq(w.field === "id" ? "_id" : w.field, w.value),
-            );
+            const eqs = where.map((w) => q.eq(w.field, w.value));
             return eqs.reduce((acc, cur) => q.and(acc, cur));
           }),
           update: transformed,
         });
-        console.log(`Update result:`, res);
         return transformOutput(res) as any;
+      },
+      async findMany({ model, where, limit, offset, sortBy }) {
+        // console.log(`FindMany:`, { model, where, limit, offset, sortBy });
+        const res = await db({
+          action: "query",
+          tableName: model,
+          query: where
+            ? queryBuilder((q) => {
+                const eqs = where.map((w) => q.eq(w.field, w.value));
+                return eqs.reduce((acc, cur) => q.and(acc, cur));
+              })
+            : undefined,
+          order: sortBy?.direction,
+          single: false,
+          limit: limit,
+          offset: offset,
+        });
+
+        // console.log(res);
+
+        return res;
       },
       //@ts-expect-error - will be fixed in the next version of better-auth
       createSchema(options, file) {
