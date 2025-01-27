@@ -34,5 +34,6 @@ describe("Run BetterAuth Adapter tests", async () => {
     getAdapter: async (customOptions = {}) => {
       return adapter({ ...customOptions });
     },
+    skipGenerateIdTest: true,
   });
 });

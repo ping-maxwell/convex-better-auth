@@ -32,6 +32,20 @@ export async function insertDb(
   });
   return call;
 }
+export async function updateDb(
+  client: ConvexClient,
+  args: {
+    tableName: string;
+    query: string;
+    update: Record<string, any>;
+  },
+) {
+  const call = await client.action(anyApi.betterAuth.betterAuth, {
+    action: "update",
+    value: args,
+  });
+  return call;
+}
 
 export const createTransform = ({
   config,
@@ -52,14 +66,14 @@ export const createTransform = ({
     return f.fieldName || field;
   }
 
-  type DbWrite = {
-    action: "write";
+  type DbInsert = {
+    action: "insert";
     tableName: string;
     values: Record<string, any>;
   };
 
-  type DbRead = {
-    action: "read";
+  type DbQuery = {
+    action: "query";
     tableName: string;
     query?: string;
     order?: "asc" | "desc";
@@ -72,8 +86,15 @@ export const createTransform = ({
     query?: string;
   };
 
-  async function db(options: DbWrite | DbRead | DbDelete) {
-    if (options.action === "read") {
+  type DbUpdate = {
+    action: "update";
+    tableName: string;
+    query: string;
+    update: Record<string, any>;
+  };
+
+  async function db(options: DbInsert | DbQuery | DbDelete | DbUpdate) {
+    if (options.action === "query") {
       return await queryDb(client, {
         tableName: options.tableName,
         order: options.order,
@@ -81,7 +102,7 @@ export const createTransform = ({
         single: options.single,
       });
     }
-    if (options.action === "write") {
+    if (options.action === "insert") {
       return await insertDb(client, {
         tableName: options.tableName,
         values: options.values,
@@ -89,6 +110,13 @@ export const createTransform = ({
     }
     if (options.action === "delete") {
       return "not implemented";
+    }
+    if (options.action === "update") {
+      return await updateDb(client, {
+        tableName: options.tableName,
+        query: options.query,
+        update: options.update,
+      });
     }
     return "";
   }
@@ -127,11 +155,22 @@ export const createTransform = ({
         );
       }
       for (const field in transformedData) {
-        if (transformedData[field] instanceof Date) {
+        if (field === "id") {
+          delete transformedData[field];
+        } else if (transformedData[field] instanceof Date) {
           transformedData[field] = transformedData[field].toISOString();
         }
       }
       return transformedData;
+    },
+    transformOutput(data: Record<string, any>) {
+      for (const field in data) {
+        if (field === "_id") {
+          data.id = data[field];
+          delete data[field];
+        }
+      }
+      return data;
     },
     getField,
     getModelName,

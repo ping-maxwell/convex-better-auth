@@ -9,8 +9,28 @@ import type {
 import { v } from "convex/values";
 import { type QueryFilter, stringToQuery } from "./helpers";
 
-export function queryBuilder(cb: QueryFilter) {
-  return cb.toString().split("=>")[1].trimStart();
+const q_ = {
+  eq: (key: string, value: any) =>
+    `q.eq(q.field("${key}"), ${JSON.stringify(value)})`,
+  add: (key: string, value: any) =>
+    `q.add(q.field("${key}"), ${JSON.stringify(value)})`,
+  gt: (key: string, value: any) =>
+    `q.gt(q.field("${key}"), ${JSON.stringify(value)})`,
+  lt: (key: string, value: any) =>
+    `q.lt(q.field("${key}"), ${JSON.stringify(value)})`,
+  gte: (key: string, value: any) =>
+    `q.gte(q.field("${key}"), ${JSON.stringify(value)})`,
+  lte: (key: string, value: any) =>
+    `q.lte(q.field("${key}"), ${JSON.stringify(value)})`,
+  in: (key: string, value: any) =>
+    `q.in(q.field("${key}"), ${JSON.stringify(value)})`,
+  not: (key: string, value: any) =>
+    `q.not(q.field("${key}"), ${JSON.stringify(value)})`,
+  and: (...args: any[]) => `q.and(${args.join(", ")})`,
+  or: (...args: any[]) => `q.or(${args.join(", ")})`,
+};
+export function queryBuilder(cb: (q: typeof q_) => string) {
+  return cb(q_);
 }
 
 export type ConvexReturnType = {
@@ -40,6 +60,15 @@ export type ConvexReturnType = {
     },
     Promise<any>
   >;
+  update: RegisteredMutation<
+    "internal",
+    {
+      tableName: string;
+      query: any;
+      update: any;
+    },
+    void
+  >;
 };
 
 export function ConvexHandler<
@@ -62,6 +91,7 @@ export function ConvexHandler<
     betterAuth: {
       query: any;
       insert: any;
+      update: any;
     };
   } & Record<string, any>;
 }): ConvexReturnType {
@@ -77,14 +107,25 @@ export function ConvexHandler<
       }
       if (args.action === "insert") {
         try {
-          await ctx.runMutation(internal.betterAuth.insert, {
+          const _id = await ctx.runMutation(internal.betterAuth.insert, {
             tableName: args.value.tableName,
             values: args.value.values,
           });
+          return {
+            _id: _id,
+            ...args.value.values,
+          };
         } catch (error) {
           return error;
         }
-        return args.value.values;
+      }
+      if (args.action === "update") {
+        const res = await ctx.runMutation(internal.betterAuth.update, {
+          tableName: args.value.tableName,
+          query: args.value.query,
+          update: args.value.update,
+        });
+        return res;
       }
     },
   });
@@ -141,5 +182,23 @@ export function ConvexHandler<
     },
   });
 
-  return { betterAuth, query, insert };
+  const update = internalMutation({
+    args: {
+      tableName: v.string(),
+      query: v.any(),
+      update: v.any(),
+    },
+    async handler(ctx, { tableName, update, query }) {
+      const res = await ctx.db
+        .query(tableName)
+        .filter((q) => {
+          return stringToQuery(query, q);
+        })
+        .first();
+      await ctx.db.patch(res._id, update);
+      return Object.assign(res, update);
+    },
+  });
+
+  return { betterAuth, query, insert, update };
 }

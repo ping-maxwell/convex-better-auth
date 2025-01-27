@@ -1,4 +1,5 @@
 import type { FilterBuilder } from "convex/server";
+
 import type { Expression } from "convex/server";
 
 //@ts-ignore
@@ -6,7 +7,8 @@ export type QueryFilter = (q: FilterBuilder<{}>) => Expression<boolean>;
 //@ts-ignore
 export function stringToQuery(query_string: string, query: FilterBuilder<{}>) {
   const tokens = tokenize(query_string);
-  return parseExpression(tokens, { value: 0 }, query);
+  const result = parseExpression(tokens, { value: 0 }, query);
+  return result;
 }
 
 type Token = {
@@ -98,7 +100,6 @@ function parseExpression(
     if (token.value.startsWith("q.")) {
       const functionName = token.value.slice(2);
 
-      // Expect opening parenthesis
       if (
         tokens[index.value]?.type !== "parenthesis" ||
         tokens[index.value]?.value !== "("
@@ -116,16 +117,19 @@ function parseExpression(
           index.value++;
           continue;
         }
-        args.push(parseExpression(tokens, index, query));
+
+        // Get the next expression
+        const expr = parseExpression(tokens, index, query);
+
+        args.push(expr);
       }
 
-      // Expect closing parenthesis
       if (tokens[index.value]?.value !== ")") {
         throw new Error("Expected closing parenthesis");
       }
       index.value++;
 
-      // @ts-ignore
+      //@ts-ignore
       return query[functionName](...args);
     }
   } else if (token.type === "string") {
