@@ -19,7 +19,7 @@ export const convexAdapter =
         `[ConvexAdapter] Could not connect to Convex, make sure your config.convex_url is set properly. ${error}`,
       );
     }
-    const { transformInput, getModelName, db, transformOutput } =
+    const { transformInput, filterInvalidOperators, db, transformOutput } =
       createTransform({
         config,
         options,
@@ -38,14 +38,13 @@ export const convexAdapter =
         return transformOutput(res) as any;
       },
       findOne: async ({ model, where, select }) => {
+        filterInvalidOperators(where);
         // console.log(`FindOne:`, { model, where, select });
         const res = await db({
           action: "query",
           tableName: model,
           query: queryBuilder((q) => {
-            const eqs = where.map((w) =>
-              q.eq(w.field === "id" ? "_id" : w.field, w.value),
-            );
+            const eqs = where.map((w) => q.eq(w.field, w.value));
             return eqs.reduce((acc, cur) => q.and(acc, cur));
           }),
           single: true,
@@ -61,17 +60,20 @@ export const convexAdapter =
           }
         }
         // console.log(`Result:`, result);
-
         return result as any;
       },
       update: async ({ model, where, update }) => {
         // console.log(`Update:`, { model, where, update });
+        filterInvalidOperators(where);
         const transformed = transformInput(update, model, "update");
         const res = await db({
           action: "update",
           tableName: model,
           query: queryBuilder((q) => {
-            const eqs = where.map((w) => q.eq(w.field, w.value));
+            const eqs = where.map((w) =>
+              //@ts-ignore
+              q[w.operator || "eq"](w.field, w.value),
+            );
             return eqs.reduce((acc, cur) => q.and(acc, cur));
           }),
           update: transformed,
@@ -79,6 +81,10 @@ export const convexAdapter =
         return transformOutput(res) as any;
       },
       async findMany({ model, where, limit, offset, sortBy }) {
+        filterInvalidOperators(where);
+
+        console.log(`Find many:`, { model, where });
+
         const queryString = where
           ? queryBuilder((q) => {
               const eqs = where.map((w) => q.eq(w.field, w.value));
@@ -105,8 +111,7 @@ export const convexAdapter =
               },
             })) as PaginationResult<any>;
             continueCursor = opts.continueCursor;
-            const { page } = opts;
-            results.push(...page);
+            results.push(...opts.page);
             if (results.length >= offset + (limit || 1)) {
               isDone = true;
               return limit

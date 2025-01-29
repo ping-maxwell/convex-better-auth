@@ -1,7 +1,7 @@
 import { generateId } from "better-auth";
 import { getAuthTables, type FieldAttribute } from "better-auth/db";
 import type { ConvexAdapterOptions } from "../types";
-import type { BetterAuthOptions } from "better-auth";
+import type { BetterAuthOptions, Where } from "better-auth";
 import type { ConvexClient } from "convex/browser";
 import { anyApi } from "convex/server";
 
@@ -131,6 +131,16 @@ export const createTransform = ({
     return schema[model].modelName !== model ? schema[model].modelName : model;
   };
 
+  function filterInvalidOperators(where: Where[] | undefined): void {
+    if (!where) return;
+    const invalidOps = ["contains", "starts_with", "ends_with"];
+    if (where.filter((w) => invalidOps.includes(w.operator || "")).length > 0) {
+      throw new Error(
+        `Convex does not support ${invalidOps.join(", ")} operators`,
+      );
+    }
+  }
+
   const useDatabaseGeneratedId = options?.advanced?.generateId === false;
   return {
     transformInput(
@@ -186,6 +196,7 @@ export const createTransform = ({
     getField,
     getModelName,
     db,
+    filterInvalidOperators,
   };
 };
 

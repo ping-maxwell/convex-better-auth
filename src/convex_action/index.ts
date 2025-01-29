@@ -1,12 +1,11 @@
-import {
-  paginationOptsValidator,
-  type ActionBuilder,
-  type MutationBuilder,
-  type PaginationOptions,
-  type QueryBuilder,
-  type RegisteredAction,
-  type RegisteredMutation,
-  type RegisteredQuery,
+import type {
+  ActionBuilder,
+  MutationBuilder,
+  PaginationOptions,
+  QueryBuilder,
+  RegisteredAction,
+  RegisteredMutation,
+  RegisteredQuery,
 } from "convex/server";
 import { v } from "convex/values";
 import { stringToQuery } from "./helpers";
@@ -27,6 +26,16 @@ const q_ = {
     `q.eq(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
   add: (key: string, value: any) =>
     `q.add(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
+  sub: (key: string, value: any) =>
+    `q.sub(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
+  mul: (key: string, value: any) =>
+    `q.mul(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
+  div: (key: string, value: any) =>
+    `q.div(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
+  mod: (key: string, value: any) =>
+    `q.mod(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
+  neg: (key: string, value: any) =>
+    `q.neg(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
   gt: (key: string, value: any) =>
     `q.gt(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
   lt: (key: string, value: any) =>
@@ -37,11 +46,12 @@ const q_ = {
     `q.lte(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
   in: (key: string, value: any) =>
     `q.in(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
-  not: (key: string, value: any) =>
-    `q.not(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
+  ne: (key: string, value: any) =>
+    `q.neq(q.field("${replaceFields(key)}"), ${JSON.stringify(value)})`,
   and: (...args: any[]) => `q.and(${args.join(", ")})`,
   or: (...args: any[]) => `q.or(${args.join(", ")})`,
 };
+
 export function queryBuilder(cb: (q: typeof q_) => string) {
   return cb(q_);
 }
