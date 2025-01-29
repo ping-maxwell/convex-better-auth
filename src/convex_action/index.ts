@@ -1,10 +1,12 @@
-import type {
-  ActionBuilder,
-  MutationBuilder,
-  QueryBuilder,
-  RegisteredAction,
-  RegisteredMutation,
-  RegisteredQuery,
+import {
+  paginationOptsValidator,
+  type ActionBuilder,
+  type MutationBuilder,
+  type PaginationOptions,
+  type QueryBuilder,
+  type RegisteredAction,
+  type RegisteredMutation,
+  type RegisteredQuery,
 } from "convex/server";
 import { v } from "convex/values";
 import { stringToQuery } from "./helpers";
@@ -112,7 +114,8 @@ export function ConvexHandler<
     args: { action: v.string(), value: v.any() },
     handler: async (ctx, args) => {
       if (args.action === "query") {
-        console.log(`Query:`, args.value);
+        // console.log(`Query:`, args.value);
+
         const data = (await ctx.runQuery(internal.betterAuth.query, {
           query: args.value.query,
           tableName: args.value.tableName,
@@ -120,6 +123,7 @@ export function ConvexHandler<
           offset: args.value.offset,
           order: args.value.order,
           single: args.value.single,
+          paginationOpts: args.value.paginationOpts,
         })) as unknown as any;
         return data;
       }
@@ -160,8 +164,14 @@ export function ConvexHandler<
        */
       single: v.optional(v.boolean()),
       limit: v.optional(v.number()),
-      offset: v.optional(v.number()),
+      paginationOpts: v.optional(
+        v.object({
+          numItems: v.optional(v.number()),
+          cursor: v.optional(v.string()),
+        }),
+      ),
     },
+    //@ts-ignore
     handler: async (
       ctx,
       args: {
@@ -169,41 +179,21 @@ export function ConvexHandler<
         query?: string;
         order?: "asc" | "desc";
         single?: boolean;
-        offset?: number;
         limit?: number;
+        paginationOpts?: { numItems: number; cursor?: string };
       },
     ) => {
-      const query = ctx.db
-        .query(args.tableName)
-        .order(args.order || "asc")
-        .filter((q) => {
-          if (!args.query) return true;
-          return stringToQuery(args.query, q);
-        });
-      if (typeof args.offset === "number") {
-        args.offset = args.offset || 0;
-        let continueCursor = null;
-        let isDone = false;
-        let page: any;
+      let query = ctx.db.query(args.tableName).order(args.order || "asc");
 
-        const results = [];
-        let offsetCount = -1;
-        while (!isDone) {
-          offsetCount++;
-          ({ continueCursor, isDone, page } = await query.paginate({
-            cursor: continueCursor,
-            numItems: args.limit ?? 100,
-          }));
-          console.log("got", page.length);
-          if (offsetCount === args.offset) {
-            results.push(...page);
-            if (results.length === args.limit) {
-              isDone = true;
-              return results;
-            }
-          }
-        }
-      } else if (typeof args.single === "boolean" && args.single === true) {
+      if (args.query) {
+        query = query.filter((q) => {
+          return stringToQuery(args.query!, q);
+        });
+      }
+      if (args.paginationOpts) {
+        return await query.paginate(args.paginationOpts as PaginationOptions);
+      }
+      if (args.single === true) {
         return await query.first();
       }
       if (typeof args.limit === "number") {

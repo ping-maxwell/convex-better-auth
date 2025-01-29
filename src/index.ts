@@ -4,6 +4,7 @@ import type { ConvexAdapterOptions } from "./types";
 import { generateSchema } from "./generate-schema";
 import { createTransform } from "./transform";
 import { queryBuilder } from "./convex_action/index";
+import type { PaginationResult } from "convex/server";
 
 export * from "./convex_action/index";
 
@@ -37,7 +38,7 @@ export const convexAdapter =
         return transformOutput(res) as any;
       },
       findOne: async ({ model, where, select }) => {
-        console.log(`FindOne:`, { model, where, select });
+        // console.log(`FindOne:`, { model, where, select });
         const res = await db({
           action: "query",
           tableName: model,
@@ -59,7 +60,7 @@ export const convexAdapter =
             result[key] = res[key];
           }
         }
-        console.log(`Result:`, result);
+        // console.log(`Result:`, result);
 
         return result as any;
       },
@@ -78,25 +79,62 @@ export const convexAdapter =
         return transformOutput(res) as any;
       },
       async findMany({ model, where, limit, offset, sortBy }) {
-        // console.log(`FindMany:`, { model, where, limit, offset, sortBy });
-        const res = await db({
-          action: "query",
-          tableName: model,
-          query: where
-            ? queryBuilder((q) => {
-                const eqs = where.map((w) => q.eq(w.field, w.value));
-                return eqs.reduce((acc, cur) => q.and(acc, cur));
-              })
-            : undefined,
-          order: sortBy?.direction,
-          single: false,
-          limit: limit,
-          offset: offset,
-        });
+        offset !== undefined
+          ? console.log(`FindMany:`, { model, where, limit, offset, sortBy })
+          : null;
+        offset !== undefined
+          ? console.log(
+              await db({ action: "query", tableName: model, single: false }),
+            )
+          : null;
+        const queryString = where
+          ? queryBuilder((q) => {
+              const eqs = where.map((w) => q.eq(w.field, w.value));
+              return eqs.reduce((acc, cur) => q.and(acc, cur));
+            })
+          : null;
+        console.log(`queryString:`, queryString);
+        if (typeof offset === "number") {
+          let continueCursor = undefined;
+          let isDone = false;
+          let page: any;
 
-        // console.log(res);
+          const results = [];
 
-        return res;
+          while (!isDone) {
+            console.log(`Is looping?`);
+            ({ continueCursor, isDone, page } = (await db({
+              action: "query",
+              tableName: model,
+              query: queryString ?? undefined,
+              order: sortBy?.direction,
+              single: false,
+              limit: limit,
+              paginationOpts: {
+                numItems: limit || 100,
+                cursor: continueCursor,
+              },
+            })) as PaginationResult<any>);
+            results.push(...page);
+            console.log(`loop res:`, page);
+            //TODO: fix this
+            if (results.length === limit) {
+              console.log(`Done!`, results);
+              isDone = true;
+              return results;
+            }
+          }
+        } else {
+          const res = await db({
+            action: "query",
+            tableName: model,
+            query: queryString ? queryString : undefined,
+            order: sortBy?.direction,
+            single: false,
+            limit: limit,
+          });
+          return res;
+        }
       },
       //@ts-expect-error - will be fixed in the next version of better-auth
       createSchema(options, file) {

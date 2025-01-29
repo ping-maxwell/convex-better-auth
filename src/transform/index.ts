@@ -13,7 +13,7 @@ export async function queryDb(
     order?: "asc" | "desc";
     single?: boolean;
     limit?: number;
-    offset?: number;
+    paginationOpts?: { numItems: number; cursor?: string };
   },
 ) {
   return await client.action(anyApi.betterAuth.betterAuth, {
@@ -81,7 +81,7 @@ export const createTransform = ({
     order?: "asc" | "desc";
     single?: boolean;
     limit?: number;
-    offset?: number;
+    paginationOpts?: { numItems: number; cursor?: string };
   };
 
   type DbDelete = {
@@ -105,7 +105,7 @@ export const createTransform = ({
         query: options.query,
         single: options.single,
         limit: options.limit,
-        offset: options.offset,
+        paginationOpts: options.paginationOpts,
       });
     }
     if (options.action === "insert") {
