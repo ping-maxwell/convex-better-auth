@@ -79,14 +79,6 @@ export const convexAdapter =
         return transformOutput(res) as any;
       },
       async findMany({ model, where, limit, offset, sortBy }) {
-        offset !== undefined
-          ? console.log(`FindMany:`, { model, where, limit, offset, sortBy })
-          : null;
-        offset !== undefined
-          ? console.log(
-              await db({ action: "query", tableName: model, single: false }),
-            )
-          : null;
         const queryString = where
           ? queryBuilder((q) => {
               const eqs = where.map((w) => q.eq(w.field, w.value));
