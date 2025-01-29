@@ -97,13 +97,12 @@ export const convexAdapter =
         if (typeof offset === "number") {
           let continueCursor = undefined;
           let isDone = false;
-          let page: any;
 
           const results = [];
 
           while (!isDone) {
             console.log(`Is looping?`);
-            ({ continueCursor, isDone, page } = (await db({
+            const opts = (await db({
               action: "query",
               tableName: model,
               query: queryString ?? undefined,
@@ -111,17 +110,18 @@ export const convexAdapter =
               single: false,
               limit: limit,
               paginationOpts: {
-                numItems: limit || 100,
+                numItems: 100,
                 cursor: continueCursor,
               },
-            })) as PaginationResult<any>);
+            })) as PaginationResult<any>;
+            continueCursor = opts.continueCursor;
+            const { page } = opts;
             results.push(...page);
             console.log(`loop res:`, page);
-            //TODO: fix this
-            if (results.length === limit) {
+            if (results.length >= offset + (limit || 1)) {
               console.log(`Done!`, results);
               isDone = true;
-              return results;
+              return limit ? results.slice(offset, offset + limit) : results.slice(offset);
             }
           }
         } else {
