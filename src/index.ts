@@ -93,7 +93,6 @@ export const convexAdapter =
               return eqs.reduce((acc, cur) => q.and(acc, cur));
             })
           : null;
-        console.log(`queryString:`, queryString);
         if (typeof offset === "number") {
           let continueCursor = undefined;
           let isDone = false;
@@ -101,7 +100,6 @@ export const convexAdapter =
           const results = [];
 
           while (!isDone) {
-            console.log(`Is looping?`);
             const opts = (await db({
               action: "query",
               tableName: model,
@@ -117,11 +115,11 @@ export const convexAdapter =
             continueCursor = opts.continueCursor;
             const { page } = opts;
             results.push(...page);
-            console.log(`loop res:`, page);
             if (results.length >= offset + (limit || 1)) {
-              console.log(`Done!`, results);
               isDone = true;
-              return limit ? results.slice(offset, offset + limit) : results.slice(offset);
+              return limit
+                ? results.slice(offset, offset + limit)
+                : results.slice(offset);
             }
           }
         } else {
