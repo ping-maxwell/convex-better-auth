@@ -3,8 +3,6 @@ export type ConvexQuery = QueryBuilder<AnyDataModel, "public">;
 export type ConvexAdapterOptions = {
     convex_url: string;
     convex_dir_path?: string;
-    advanced?: {
-        generateId?: (data: Record<string, any>) => string;
-    };
+    enable_debug_logs?: boolean;
 };
 export type ConvexMutation = MutationBuilder<AnyDataModel, "public">;

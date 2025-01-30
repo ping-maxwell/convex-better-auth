@@ -22,4 +22,4 @@ export const removeAll = mutation({
       await ctx.db.delete(acc._id);
     }
   },
-}); 
+});
