@@ -48,6 +48,20 @@ export async function updateDb(
   });
   return call;
 }
+export async function deleteDb(
+  client: ConvexClient,
+  args: {
+    tableName: string;
+    query: string;
+    deleteAll?: boolean;
+  },
+) {
+  const call = await client.action(anyApi.betterAuth.betterAuth, {
+    action: "delete",
+    value: args,
+  });
+  return call;
+}
 
 export const createTransform = ({
   config,
@@ -109,7 +123,8 @@ export const createTransform = ({
   type DbDelete = {
     action: "delete";
     tableName: string;
-    query?: string;
+    query: string;
+    deleteAll?: boolean;
   };
 
   type DbUpdate = {
@@ -137,7 +152,11 @@ export const createTransform = ({
       });
     }
     if (options.action === "delete") {
-      return "not implemented";
+      return await deleteDb(client, {
+        tableName: options.tableName,
+        query: options.query,
+        deleteAll: options.deleteAll,
+      });
     }
     if (options.action === "update") {
       return await updateDb(client, {

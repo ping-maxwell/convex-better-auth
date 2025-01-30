@@ -165,10 +165,10 @@ export const convexAdapter =
         }
       },
       updateMany: async ({ model, where, update }) => {
-        console.log(`UpdateMany:`, { model, where, update });
+        // console.log(`UpdateMany:`, { model, where, update });
         filterInvalidOperators(where);
         where = transformWhereOperators(where);
-        console.log(`Where:`, where);
+        // console.log(`Where:`, where);
 
         const transformed = transformInput(update, model, "update");
         const res = await db({
@@ -190,6 +190,57 @@ export const convexAdapter =
           update: transformed,
         });
         return transformOutput(res) as any;
+      },
+      delete: async ({ model, where }) => {
+        // console.log(`Delete:`, { model, where });
+        filterInvalidOperators(where);
+        where = transformWhereOperators(where);
+        // console.log(`Where:`, where);
+
+        const res = await db({
+          action: "delete",
+          tableName: model,
+          query: queryBuilder((q) => {
+            const eqs = where.map((w) =>
+              //@ts-ignore
+              q[w.operator || "eq"](w.field, w.value),
+            );
+            return eqs.reduce((acc, cur, indx) =>
+              q[
+                (where[indx - 1].connector || "AND").toLowerCase() as
+                  | "and"
+                  | "or"
+              ](acc, cur),
+            );
+          }),
+        });
+        return res;
+      },
+      deleteMany: async ({ model, where }) => {
+        console.log(`DeleteMany:`, { model, where });
+        filterInvalidOperators(where);
+        where = transformWhereOperators(where);
+        console.log(`Where:`, where);
+
+        const res = await db({
+          action: "delete",
+          tableName: model,
+          deleteAll: true,
+          query: queryBuilder((q) => {
+            const eqs = where.map((w) =>
+              //@ts-ignore
+              q[w.operator || "eq"](w.field, w.value),
+            );
+            return eqs.reduce((acc, cur, indx) =>
+              q[
+                (where[indx - 1].connector || "AND").toLowerCase() as
+                  | "and"
+                  | "or"
+              ](acc, cur),
+            );
+          }),
+        });
+        return res;
       },
       //@ts-expect-error - will be fixed in the next version of better-auth
       createSchema(options, file) {

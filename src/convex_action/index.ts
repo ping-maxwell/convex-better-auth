@@ -3,6 +3,7 @@ import type {
   MutationBuilder,
   PaginationOptions,
   QueryBuilder,
+  QueryInitializer,
   RegisteredAction,
   RegisteredMutation,
   RegisteredQuery,
@@ -94,6 +95,15 @@ export type ConvexReturnType = {
     },
     void
   >;
+  delete_: RegisteredMutation<
+    "internal",
+    {
+      tableName: string;
+      query: any;
+      deleteAll?: boolean;
+    },
+    Promise<void>
+  >;
 };
 
 export function ConvexHandler<
@@ -117,6 +127,7 @@ export function ConvexHandler<
       query: any;
       insert: any;
       update: any;
+      delete_: any;
     };
   } & Record<string, any>;
 }): ConvexReturnType {
@@ -156,6 +167,14 @@ export function ConvexHandler<
           tableName: args.value.tableName,
           query: args.value.query,
           update: args.value.update,
+        });
+        return res;
+      }
+      if (args.action === "delete") {
+        const res = await ctx.runMutation(internal.betterAuth.delete_, {
+          tableName: args.value.tableName,
+          query: args.value.query,
+          deleteAll: args.value.deleteAll,
         });
         return res;
       }
@@ -249,5 +268,31 @@ export function ConvexHandler<
     },
   });
 
-  return { betterAuth, query, insert, update };
+  const delete_ = internalMutation({
+    args: {
+      tableName: v.string(),
+      query: v.any(),
+      deleteAll: v.optional(v.boolean()),
+    },
+    async handler(ctx, { tableName, query, deleteAll }) {
+      const r = ctx.db.query(tableName).filter((q) => {
+        return stringToQuery(query, q);
+      });
+      if (!deleteAll) {
+        const res = await r.first();
+        //If no result found for that query, than there is no mutation needed.
+        if (!res) return;
+        await ctx.db.delete(res._id);
+        return;
+      }
+      const res = await r.collect();
+      if (!res) return;
+      res.forEach((r) => {
+        ctx.db.delete(r._id);
+      });
+      return;
+    },
+  });
+
+  return { betterAuth, query, insert, update, delete_ };
 }
