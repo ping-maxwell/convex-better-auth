@@ -4,7 +4,7 @@ This is a database adapter for [Convex](https://www.convex.dev/) that allows you
 
 > [!CAUTION]
 > Convex DB isn't designed for this. I've implemented work-arounds to allow for dynamic queries and mutations to work on Convex which traditionally isn't a thing.
-> Furthermore, has many limitations which Better Auth may require in certain areas. Some plugins may not work as intended.
+> Furthermore, it has many limitations which Better Auth may require in certain areas. Some plugins may not work as intended.
 >
 > A list of limitations are as follows:
 >
