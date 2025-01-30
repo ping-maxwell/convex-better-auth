@@ -1,5 +1,5 @@
 import { ConvexClient } from "convex/browser";
-import type { Adapter, BetterAuthOptions } from "better-auth";
+import type { Adapter, AdapterInstance, BetterAuthOptions } from "better-auth";
 import type { ConvexAdapterOptions } from "./types";
 import { generateSchema } from "./generate-schema";
 import { createTransform } from "./transform";
@@ -8,7 +8,9 @@ import type { PaginationResult } from "convex/server";
 
 export * from "./convex_action/index";
 
-export const convexAdapter =
+export type ConvexAdapter = (config: ConvexAdapterOptions) => AdapterInstance;
+
+export const convexAdapter: ConvexAdapter =
   (config: ConvexAdapterOptions) =>
   (options: BetterAuthOptions): Adapter => {
     let client: ConvexClient;
