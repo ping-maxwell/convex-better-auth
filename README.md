@@ -1,17 +1,16 @@
-# Convex Database Adapter for Better-Auth
+# Convex Database Adapter for BetterAuth
 
-This is a database adapter for [Convex](https://www.convex.dev/) that allows you to use [BetterAuth](https://www.better-auth.com/) with Convex.
+Introducing a database adapter designed for [Convex](https://www.convex.dev/) that enables seamless integration with [BetterAuth](https://www.better-auth.com/).
 
 > [!CAUTION]
-> Convex DB isn't designed for this. I've implemented work-arounds to allow for dynamic queries and mutations to work on Convex which traditionally isn't a thing.
-> Furthermore, it has many limitations which Better Auth may require in certain areas. Some plugins may not work as intended.
+> Please note that Convex DB is not inherently designed for this purpose. I have implemented workarounds to facilitate dynamic queries and mutations within Convex, which is typically not supported. Additionally, there are several limitations that may affect the functionality of BetterAuth in certain scenarios. Some plugins may not operate as expected.
 >
-> A list of limitations are as follows:
+> Here are the key limitations to consider:
 >
-> - performnace issues: Since queries/mutations can't be dynamic, we essentially send a request to Convex Actions, to then call the mutate/query function. This alone is already 2 calls, not including the follow DB queries/mutation calls.
-> - No support for `sortBy` queries. Better Auth requires this to be at a per `field` level, Convex does this at the table level.
-> - Degraded performance for pagiantion queries. Convex doesn't support this very well as we're working out of their scope.
-> - No support for operators such as `starts_with`, `ends_with`, or `contains`. Off the top of my head, only the admin plugin would be effected by this.
+> - **Performance Issues**: Due to the inability to perform dynamic queries/mutations, we send a request to Convex Actions, which then calls the mutate/query function. This results in at least two calls, not including subsequent database queries or mutation calls.
+> - **Lack of `sortBy` Support**: BetterAuth requires sorting at the individual field level, while Convex only supports sorting at the table level.
+> - **Degraded Performance for Pagination Queries**: Convex's support for pagination is limited, which may lead to performance issues when working outside its intended scope.
+> - **No Support for Certain Operators**: Operators such as `starts_with`, `ends_with`, or `contains` are not supported. This limitation primarily affects the admin plugin.
 
 ## Installation
 
