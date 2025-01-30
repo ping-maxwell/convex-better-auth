@@ -10,12 +10,19 @@ export * from "./convex_action/index";
 
 export type ConvexAdapter = (config: ConvexAdapterOptions) => AdapterInstance;
 
-export const convexAdapter: ConvexAdapter =
-  (config: ConvexAdapterOptions) =>
-  (options: BetterAuthOptions): Adapter => {
+export const convexAdapter: ConvexAdapter = (config: ConvexAdapterOptions) => {
+  function debugLog(message: any[]) {
+    if (config.enable_debug_logs) {
+      console.log(`[convex-better-auth]`, ...message);
+    }
+  }
+
+  return (options: BetterAuthOptions): Adapter => {
     let client: ConvexClient;
     try {
+      debugLog(["Connecting to Convex..."]);
       client = new ConvexClient(config.convex_url);
+      debugLog(["Connected to Convex"]);
     } catch (error) {
       throw new Error(
         `[ConvexAdapter] Could not connect to Convex, make sure your config.convex_url is set properly. ${error}`,
@@ -36,18 +43,29 @@ export const convexAdapter: ConvexAdapter =
     return {
       id: "convex",
       async create({ data: values, model, select }) {
+        debugLog(["create", { model, values, select }]);
         const transformed = transformInput(values, model, "create");
         const res = await db({
           action: "insert",
           tableName: model,
           values: transformed,
         });
-        return transformOutput(res) as any;
+        let result: Record<string, any> | null = null;
+
+        if (!select || select.length === 0) result = res;
+        else {
+          result = {};
+          for (const key of select) {
+            result[key] = res[key];
+          }
+        }
+        debugLog(["create result", { result }]);
+        return result ? (transformOutput(result) as any) : result;
       },
       findOne: async ({ model, where, select }) => {
         filterInvalidOperators(where);
         where = transformWhereOperators(where);
-        // console.log(`FindOne:`, { model, where, select });
+        debugLog(["findOne", { model, where, select }]);
         const res = await db({
           action: "query",
           tableName: model,
@@ -73,14 +91,13 @@ export const convexAdapter: ConvexAdapter =
             result[key] = res[key];
           }
         }
-        // console.log(`Result:`, result);
+        debugLog(["findOne result", { result }]);
         return result ? (transformOutput(result) as any) : result;
       },
       update: async ({ model, where, update }) => {
-        // console.log(`Update:`, { model, where, update });
         filterInvalidOperators(where);
         where = transformWhereOperators(where);
-        // console.log(`Where:`, where);
+        debugLog(["update", { model, where, update }]);
 
         const transformed = transformInput(update, model, "update");
         const res = await db({
@@ -101,12 +118,13 @@ export const convexAdapter: ConvexAdapter =
           }),
           update: transformed,
         });
+        debugLog(["update result", { res }]);
         return transformOutput(res) as any;
       },
       async findMany({ model, where, limit, offset, sortBy }) {
         filterInvalidOperators(where);
         where = transformWhereOperators(where);
-        // console.log(`Find many:`, { model, where, limit, offset, sortBy });
+        debugLog(["findMany", { model, where, limit, offset, sortBy }]);
 
         const queryString =
           where && where.length > 0
@@ -125,7 +143,7 @@ export const convexAdapter: ConvexAdapter =
                 );
               })
             : null;
-        // console.log(`QueryString:`, queryString);
+        debugLog(["findMany queryString", { queryString }]);
         if (typeof offset === "number") {
           let continueCursor = undefined;
           let isDone = false;
@@ -147,13 +165,16 @@ export const convexAdapter: ConvexAdapter =
             })) as PaginationResult<any>;
             continueCursor = opts.continueCursor;
             results.push(...opts.page);
+            debugLog(["findMany paginated page", { page: opts.page }]);
             if (results.length >= offset + (limit || 1)) {
               isDone = true;
-              return (
+              const result = (
                 limit
                   ? results.slice(offset, offset + limit)
                   : results.slice(offset)
               ).map((x) => transformOutput(x));
+              debugLog(["findMany pagination done", { result }]);
+              return result;
             }
           }
         } else {
@@ -165,14 +186,15 @@ export const convexAdapter: ConvexAdapter =
             single: false,
             limit: limit,
           });
-          return res.map((x: any) => transformOutput(x));
+          const result = res.map((x: any) => transformOutput(x));
+          debugLog(["findMany result", { result }]);
+          return result;
         }
       },
       updateMany: async ({ model, where, update }) => {
-        // console.log(`UpdateMany:`, { model, where, update });
         filterInvalidOperators(where);
         where = transformWhereOperators(where);
-        // console.log(`Where:`, where);
+        debugLog(["updateMany", { model, where, update }]);
 
         const transformed = transformInput(update, model, "update");
         const res = await db({
@@ -193,15 +215,15 @@ export const convexAdapter: ConvexAdapter =
           }),
           update: transformed,
         });
+        debugLog(["updateMany result", { result: transformOutput(res) }]);
         return transformOutput(res) as any;
       },
       delete: async ({ model, where }) => {
-        // console.log(`Delete:`, { model, where });
         filterInvalidOperators(where);
         where = transformWhereOperators(where);
-        // console.log(`Where:`, where);
+        debugLog(["delete", { model, where }]);
 
-        const res = await db({
+        await db({
           action: "delete",
           tableName: model,
           query: queryBuilder((q) => {
@@ -218,13 +240,13 @@ export const convexAdapter: ConvexAdapter =
             );
           }),
         });
+
         return;
       },
       deleteMany: async ({ model, where }) => {
-        // console.log(`DeleteMany:`, { model, where });
         filterInvalidOperators(where);
         where = transformWhereOperators(where);
-        // console.log(`Where:`, where);
+        debugLog(["deleteMany", { model, where }]);
 
         const res = await db({
           action: "delete",
@@ -244,6 +266,7 @@ export const convexAdapter: ConvexAdapter =
             );
           }),
         });
+        debugLog(["deleteMany result", { res }]);
         return res as number;
       },
       //@ts-expect-error - will be fixed in the next version of better-auth
@@ -258,3 +281,4 @@ export const convexAdapter: ConvexAdapter =
       },
     };
   };
+};
