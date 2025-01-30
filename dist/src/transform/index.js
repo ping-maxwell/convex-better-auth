@@ -105,7 +105,7 @@ export const createTransform = ({ config, options, client, }) => {
             for (const field in data) {
                 const modelname = getModelName(model);
                 // convert any fields that are dates to Date objects
-                if (schema[modelname].fields[field].type === "date") {
+                if (schema[modelname]?.fields[field]?.type === "date") {
                     data[field] = new Date(data[field]);
                 }
                 // convert Convex default values to their corresponding Better Auth supported names.
