@@ -1,6 +1,6 @@
 {
   "name": "convex-better-auth",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Convex Database Adapter for Better-Auth.",
   "main": "src/index.ts",
   "scripts": {
@@ -43,5 +43,8 @@
     "better-auth": "^1.1.14",
     "convex": "^1.17.4",
     "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "prettier": "^3.4.2"
   }
 }

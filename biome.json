@@ -31,7 +31,8 @@
       "style": {
         "noUnusedTemplateLiteral": "off",
         "noNonNullAssertion": "off",
-        "noParameterAssign": "off"
+        "noParameterAssign": "off",
+        "useTemplate": "off"
       },
       "complexity": {
         "noBannedTypes": "off",

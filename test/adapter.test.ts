@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { beforeAll, describe, expect, it, test } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, test } from "vitest";
 import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 import { convexAdapter } from "./../src/index";
@@ -23,6 +23,10 @@ describe("Handle Convex Adapter", async () => {
 
 describe("Run BetterAuth Adapter tests", async () => {
   beforeAll(async () => {
+    const client = new ConvexClient(process.env.CONVEX_URL as string);
+    await client.mutation(api.tests.removeAll, {});
+  });
+  afterAll(async () => {
     const client = new ConvexClient(process.env.CONVEX_URL as string);
     await client.mutation(api.tests.removeAll, {});
   });

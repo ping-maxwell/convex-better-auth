@@ -219,10 +219,10 @@ export const convexAdapter: ConvexAdapter =
         return res;
       },
       deleteMany: async ({ model, where }) => {
-        console.log(`DeleteMany:`, { model, where });
+        // console.log(`DeleteMany:`, { model, where });
         filterInvalidOperators(where);
         where = transformWhereOperators(where);
-        console.log(`Where:`, where);
+        // console.log(`Where:`, where);
 
         const res = await db({
           action: "delete",
