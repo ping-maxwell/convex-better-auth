@@ -3,7 +3,6 @@ import type {
   MutationBuilder,
   PaginationOptions,
   QueryBuilder,
-  QueryInitializer,
   RegisteredAction,
   RegisteredMutation,
   RegisteredQuery,
