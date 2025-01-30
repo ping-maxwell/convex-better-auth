@@ -19,12 +19,17 @@ export const convexAdapter =
         `[ConvexAdapter] Could not connect to Convex, make sure your config.convex_url is set properly. ${error}`,
       );
     }
-    const { transformInput, filterInvalidOperators, db, transformOutput } =
-      createTransform({
-        config,
-        options,
-        client,
-      });
+    const {
+      transformInput,
+      filterInvalidOperators,
+      db,
+      transformOutput,
+      transformWhereOperators,
+    } = createTransform({
+      config,
+      options,
+      client,
+    });
 
     return {
       id: "convex",
@@ -39,13 +44,20 @@ export const convexAdapter =
       },
       findOne: async ({ model, where, select }) => {
         filterInvalidOperators(where);
+        where = transformWhereOperators(where);
         // console.log(`FindOne:`, { model, where, select });
         const res = await db({
           action: "query",
           tableName: model,
           query: queryBuilder((q) => {
             const eqs = where.map((w) => q.eq(w.field, w.value));
-            return eqs.reduce((acc, cur) => q.and(acc, cur));
+            return eqs.reduce((acc, cur, indx) =>
+              q[
+                (where[indx - 1].connector || "AND").toLowerCase() as
+                  | "and"
+                  | "or"
+              ](acc, cur),
+            );
           }),
           single: true,
         });
@@ -65,6 +77,9 @@ export const convexAdapter =
       update: async ({ model, where, update }) => {
         // console.log(`Update:`, { model, where, update });
         filterInvalidOperators(where);
+        where = transformWhereOperators(where);
+        console.log(`Where:`, where);
+
         const transformed = transformInput(update, model, "update");
         const res = await db({
           action: "update",
@@ -74,7 +89,13 @@ export const convexAdapter =
               //@ts-ignore
               q[w.operator || "eq"](w.field, w.value),
             );
-            return eqs.reduce((acc, cur) => q.and(acc, cur));
+            return eqs.reduce((acc, cur, indx) =>
+              q[
+                (where[indx - 1].connector || "AND").toLowerCase() as
+                  | "and"
+                  | "or"
+              ](acc, cur),
+            );
           }),
           update: transformed,
         });
@@ -82,15 +103,25 @@ export const convexAdapter =
       },
       async findMany({ model, where, limit, offset, sortBy }) {
         filterInvalidOperators(where);
-
+        where = transformWhereOperators(where);
         console.log(`Find many:`, { model, where });
 
         const queryString = where
           ? queryBuilder((q) => {
-              const eqs = where.map((w) => q.eq(w.field, w.value));
-              return eqs.reduce((acc, cur) => q.and(acc, cur));
+              const eqs = where.map((w) =>
+                //@ts-ignore
+                q[w.operator || "eq"](w.field, w.value),
+              );
+              return eqs.reduce((acc, cur, indx) => {
+                return q[
+                  (where[indx - 1].connector || "AND").toLowerCase() as
+                    | "and"
+                    | "or"
+                ](acc, cur);
+              });
             })
           : null;
+        console.log(`QueryString:`, queryString);
         if (typeof offset === "number") {
           let continueCursor = undefined;
           let isDone = false;

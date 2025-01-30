@@ -10,12 +10,12 @@ export function stringToQuery(query_string: string, query: FilterBuilder<{}>) {
   const result = parseExpression(tokens, { value: 0 }, query);
   return result;
 }
-
 type Token = {
-  type: "function" | "string" | "number" | "parenthesis" | "comma";
+  type: "function" | "string" | "number" | "parenthesis" | "comma" | "bracket";
   value: string;
 };
-function tokenize(query_string: string): Token[] {
+
+export function tokenize(query_string: string): Token[] {
   const tokens: Token[] = [];
   let current = "";
   let inString = false;
@@ -37,9 +37,18 @@ function tokenize(query_string: string): Token[] {
       continue;
     }
 
-    if (char === "(" || char === ")") {
+    if (char === "[" || char === "]") {
       if (current) {
-        // Check if the current token is a number
+        if (!Number.isNaN(Number(current.trim()))) {
+          tokens.push({ type: "number", value: current.trim() });
+        } else {
+          tokens.push({ type: "function", value: current.trim() });
+        }
+        current = "";
+      }
+      tokens.push({ type: "bracket", value: char });
+    } else if (char === "(" || char === ")") {
+      if (current) {
         if (!Number.isNaN(Number(current.trim()))) {
           tokens.push({ type: "number", value: current.trim() });
         } else {
@@ -83,6 +92,37 @@ function tokenize(query_string: string): Token[] {
   return tokens;
 }
 
+function parseArray(
+  tokens: Token[],
+  index: { value: number },
+  //@ts-ignore
+  query: FilterBuilder<{}>,
+): any[] {
+  const array: any[] = [];
+
+  // Skip opening bracket
+  index.value++;
+
+  while (
+    index.value < tokens.length &&
+    tokens[index.value].type !== "bracket"
+  ) {
+    if (tokens[index.value].type === "comma") {
+      index.value++;
+      continue;
+    }
+    array.push(parseExpression(tokens, index, query));
+  }
+
+  // Skip closing bracket
+  if (tokens[index.value]?.value !== "]") {
+    throw new Error("Expected closing bracket for array");
+  }
+  index.value++;
+
+  return array;
+}
+
 function parseExpression(
   tokens: Token[],
   index: { value: number },
@@ -95,6 +135,12 @@ function parseExpression(
 
   const token = tokens[index.value];
   index.value++;
+
+  if (token.type === "bracket" && token.value === "[") {
+    // Move back one step since parseArray expects to start at the opening bracket
+    index.value--;
+    return parseArray(tokens, index, query);
+  }
 
   if (token.type === "function") {
     if (token.value.startsWith("q.")) {
@@ -118,10 +164,19 @@ function parseExpression(
           continue;
         }
 
-        // Get the next expression
         const expr = parseExpression(tokens, index, query);
 
-        args.push(expr);
+        // Special handling for _id comparisons
+        if (
+          functionName === "eq" &&
+          args.length === 1 &&
+          args[0]?.inner?.$field === "_id" &&
+          typeof expr === "string"
+        ) {
+          args.push(expr);
+        } else {
+          args.push(expr);
+        }
       }
 
       if (tokens[index.value]?.value !== ")") {

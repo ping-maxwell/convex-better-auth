@@ -60,6 +60,28 @@ export const createTransform = ({
 }) => {
   const schema = getAuthTables(options);
 
+  function transformWhereOperators(where: Where[] | undefined): Where[] {
+    if (!where) return [];
+    const new_where: Where[] = [];
+
+    for (const w of where) {
+      if (w.operator === "in") {
+        (w.value as []).forEach((v, i) => {
+          new_where.push({
+            field: w.field,
+            value: v,
+            operator: "eq",
+            connector: i < (w.value as []).length - 1 ? "OR" : undefined,
+          });
+        });
+      } else {
+        new_where.push(w);
+      }
+    }
+
+    return new_where;
+  }
+
   function getField(model: string, field: string) {
     if (field === "id") {
       return field;
@@ -197,6 +219,7 @@ export const createTransform = ({
     getModelName,
     db,
     filterInvalidOperators,
+    transformWhereOperators,
   };
 };
 
