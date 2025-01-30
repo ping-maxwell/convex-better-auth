@@ -3,6 +3,10 @@
 Introducing a database adapter designed for [Convex](https://www.convex.dev/) that enables seamless integration with [BetterAuth](https://www.better-auth.com/).
 
 > [!CAUTION]
+> This adapter is currently in beta.
+> If you encounter any issues, please report them in the [Issues](https://github.com/ping-maxwell/convex-better-auth/issues) section.
+
+> [!WARNING]
 > Please note that Convex DB is not inherently designed for this purpose. I have implemented workarounds to facilitate dynamic queries and mutations within Convex, which is typically not supported. Additionally, there are several limitations that may affect the functionality of BetterAuth in certain scenarios. Some plugins may not operate as expected.
 >
 > Here are the key limitations to consider:
