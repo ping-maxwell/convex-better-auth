@@ -11,10 +11,14 @@ export const convexAdapter = (config) => {
     }
     return (options) => {
         let client;
+        const connect_to_convext_start_time = Date.now();
         try {
             debugLog(["Connecting to Convex..."]);
             client = new ConvexClient(config.convex_url);
-            debugLog(["Connected to Convex"]);
+            debugLog([
+                "Connected to Convex",
+                `${Date.now() - connect_to_convext_start_time}ms`,
+            ]);
         }
         catch (error) {
             throw new Error(`[ConvexAdapter] Could not connect to Convex, make sure your config.convex_url is set properly. ${error}`);
@@ -27,6 +31,7 @@ export const convexAdapter = (config) => {
         return {
             id: "convex",
             async create({ data: values, model, select }) {
+                const start = Date.now();
                 debugLog(["create", { model, values, select }]);
                 const transformed = transformInput(values, model, "create");
                 const res = await db({
@@ -43,10 +48,14 @@ export const convexAdapter = (config) => {
                         result[key] = res[key];
                     }
                 }
-                debugLog(["create result", { result }]);
+                debugLog([
+                    "create result",
+                    { result, duration: `${Date.now() - start}ms` },
+                ]);
                 return result ? transformOutput(result) : result;
             },
             findOne: async ({ model, where, select }) => {
+                const start = Date.now();
                 filterInvalidOperators(where);
                 where = transformWhereOperators(where);
                 debugLog(["findOne", { model, where, select }]);
@@ -69,10 +78,14 @@ export const convexAdapter = (config) => {
                     }
                 }
                 result = result ? transformOutput(result) : result;
-                debugLog(["findOne result", { result }]);
+                debugLog([
+                    "findOne result",
+                    { result, duration: `${Date.now() - start}ms` },
+                ]);
                 return result;
             },
             update: async ({ model, where, update }) => {
+                const start = Date.now();
                 filterInvalidOperators(where);
                 where = transformWhereOperators(where);
                 debugLog(["update", { model, where, update }]);
@@ -89,10 +102,14 @@ export const convexAdapter = (config) => {
                     update: transformed,
                 });
                 const result = transformOutput(res);
-                debugLog(["update result", { result }]);
+                debugLog([
+                    "update result",
+                    { result, duration: `${Date.now() - start}ms` },
+                ]);
                 return result;
             },
             async findMany({ model, where, limit, offset, sortBy }) {
+                const start = Date.now();
                 filterInvalidOperators(where);
                 where = transformWhereOperators(where);
                 debugLog(["findMany", { model, where, limit, offset, sortBy }]);
@@ -132,7 +149,10 @@ export const convexAdapter = (config) => {
                             const result = (limit
                                 ? results.slice(offset, offset + limit)
                                 : results.slice(offset)).map((x) => transformOutput(x));
-                            debugLog(["findMany pagination done", { result }]);
+                            debugLog([
+                                "findMany pagination done",
+                                { result, duration: `${Date.now() - start}ms` },
+                            ]);
                             return result;
                         }
                     }
@@ -147,11 +167,15 @@ export const convexAdapter = (config) => {
                         limit: limit,
                     });
                     const result = res.map((x) => transformOutput(x));
-                    debugLog(["findMany result", { result }]);
+                    debugLog([
+                        "findMany result",
+                        { result, duration: `${Date.now() - start}ms` },
+                    ]);
                     return result;
                 }
             },
             updateMany: async ({ model, where, update }) => {
+                const start = Date.now();
                 filterInvalidOperators(where);
                 where = transformWhereOperators(where);
                 debugLog(["updateMany", { model, where, update }]);
@@ -168,10 +192,14 @@ export const convexAdapter = (config) => {
                     update: transformed,
                 });
                 const result = transformOutput(res);
-                debugLog(["updateMany result", { result }]);
+                debugLog([
+                    "updateMany result",
+                    { result, duration: `${Date.now() - start}ms` },
+                ]);
                 return result;
             },
             delete: async ({ model, where }) => {
+                const start = Date.now();
                 filterInvalidOperators(where);
                 where = transformWhereOperators(where);
                 debugLog(["delete", { model, where }]);
@@ -185,9 +213,11 @@ export const convexAdapter = (config) => {
                         return eqs.reduce((acc, cur, indx) => q[(where[indx - 1].connector || "AND").toLowerCase()](acc, cur));
                     }),
                 });
+                debugLog(["delete complete", { duration: `${Date.now() - start}ms` }]);
                 return;
             },
             deleteMany: async ({ model, where }) => {
+                const start = Date.now();
                 filterInvalidOperators(where);
                 where = transformWhereOperators(where);
                 debugLog(["deleteMany", { model, where }]);
@@ -202,7 +232,10 @@ export const convexAdapter = (config) => {
                         return eqs.reduce((acc, cur, indx) => q[(where[indx - 1].connector || "AND").toLowerCase()](acc, cur));
                     }),
                 });
-                debugLog(["deleteMany result", { result: res }]);
+                debugLog([
+                    "deleteMany result",
+                    { result: res, duration: `${Date.now() - start}ms` },
+                ]);
                 return res;
             },
             //@ts-expect-error - will be fixed in the next version of better-auth
