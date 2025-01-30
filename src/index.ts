@@ -74,7 +74,7 @@ export const convexAdapter: ConvexAdapter =
           }
         }
         // console.log(`Result:`, result);
-        return result as any;
+        return result ? (transformOutput(result) as any) : result;
       },
       update: async ({ model, where, update }) => {
         // console.log(`Update:`, { model, where, update });
@@ -149,9 +149,11 @@ export const convexAdapter: ConvexAdapter =
             results.push(...opts.page);
             if (results.length >= offset + (limit || 1)) {
               isDone = true;
-              return limit
-                ? results.slice(offset, offset + limit)
-                : results.slice(offset);
+              return (
+                limit
+                  ? results.slice(offset, offset + limit)
+                  : results.slice(offset)
+              ).map((x) => transformOutput(x));
             }
           }
         } else {
@@ -163,7 +165,7 @@ export const convexAdapter: ConvexAdapter =
             single: false,
             limit: limit,
           });
-          return res;
+          return res.map((x: any) => transformOutput(x));
         }
       },
       updateMany: async ({ model, where, update }) => {
@@ -216,7 +218,7 @@ export const convexAdapter: ConvexAdapter =
             );
           }),
         });
-        return res;
+        return;
       },
       deleteMany: async ({ model, where }) => {
         // console.log(`DeleteMany:`, { model, where });
@@ -242,7 +244,7 @@ export const convexAdapter: ConvexAdapter =
             );
           }),
         });
-        return res;
+        return res as number;
       },
       //@ts-expect-error - will be fixed in the next version of better-auth
       createSchema(options, file) {

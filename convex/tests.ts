@@ -15,5 +15,11 @@ export const removeAll = mutation({
       //@ts-ignore
       await ctx.db.delete(session._id);
     }
+    //@ts-ignore
+    const accounts = await ctx.db.query("account").collect();
+    for (const acc of accounts) {
+      //@ts-ignore
+      await ctx.db.delete(acc._id);
+    }
   },
-});
+}); 

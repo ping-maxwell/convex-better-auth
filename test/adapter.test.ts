@@ -1,4 +1,4 @@
-import { betterAuth } from "better-auth";
+import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { afterAll, beforeAll, describe, expect, it, test } from "vitest";
 import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
@@ -50,5 +50,57 @@ describe("Run BetterAuth Adapter tests", async () => {
       limit: 2,
     });
     expect(res.length).toBe(2);
+  });
+});
+const createTestOptions = (): BetterAuthOptions => ({
+  user: {
+    fields: { email: "email_address" },
+    additionalFields: {
+      test: {
+        type: "string",
+        defaultValue: "test",
+      },
+    },
+  },
+  session: {
+    modelName: "sessions",
+  },
+});
+
+describe("Authentication Flow Tests", async () => {
+  const opts = createTestOptions();
+  const testUser = {
+    email: "test-email@email.com",
+    password: "password",
+    name: "Test Name",
+  };
+  beforeAll(async () => {
+    const client = new ConvexClient(process.env.CONVEX_URL as string);
+    await client.mutation(api.tests.removeAll, {});
+  });
+  // afterAll(async () => {
+  //   const client = new ConvexClient(process.env.CONVEX_URL as string);
+  //   await client.mutation(api.tests.removeAll, {});
+  // });
+
+  const auth = betterAuth({
+    ...opts,
+    database: convexAdapter({
+      convex_url: process.env.CONVEX_URL as string,
+    }),
+    emailAndPassword: {
+      enabled: true,
+    },
+  });
+
+  it("should successfully sign up a new user", async () => {
+    const user = await auth.api.signUpEmail({ body: testUser });
+    expect(user).toBeDefined();
+  });
+
+  it("should successfully sign in an existing user", async () => {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    const user = await auth.api.signInEmail({ body: testUser });
+    expect(user.user).toBeDefined();
   });
 });
