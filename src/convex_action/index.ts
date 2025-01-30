@@ -242,6 +242,8 @@ export function ConvexHandler<
           return stringToQuery(query, q);
         })
         .first();
+      //If no result found for that query, than there is no mutation needed.
+      if (!res) return;
       await ctx.db.patch(res._id, update);
       return Object.assign(res, update);
     },

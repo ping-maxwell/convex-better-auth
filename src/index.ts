@@ -78,7 +78,7 @@ export const convexAdapter =
         // console.log(`Update:`, { model, where, update });
         filterInvalidOperators(where);
         where = transformWhereOperators(where);
-        console.log(`Where:`, where);
+        // console.log(`Where:`, where);
 
         const transformed = transformInput(update, model, "update");
         const res = await db({
@@ -104,24 +104,26 @@ export const convexAdapter =
       async findMany({ model, where, limit, offset, sortBy }) {
         filterInvalidOperators(where);
         where = transformWhereOperators(where);
-        console.log(`Find many:`, { model, where });
+        // console.log(`Find many:`, { model, where, limit, offset, sortBy });
 
-        const queryString = where
-          ? queryBuilder((q) => {
-              const eqs = where.map((w) =>
-                //@ts-ignore
-                q[w.operator || "eq"](w.field, w.value),
-              );
-              return eqs.reduce((acc, cur, indx) => {
-                return q[
-                  (where[indx - 1].connector || "AND").toLowerCase() as
-                    | "and"
-                    | "or"
-                ](acc, cur);
-              });
-            })
-          : null;
-        console.log(`QueryString:`, queryString);
+        const queryString =
+          where && where.length > 0
+            ? queryBuilder((q) => {
+                const eqs = where.map((w) =>
+                  //@ts-ignore
+                  q[w.operator || "eq"](w.field, w.value),
+                );
+                if (eqs.length === 1) return eqs[0];
+                return eqs.reduce((acc, cur, indx) =>
+                  q[
+                    (where[indx - 1].connector || "AND").toLowerCase() as
+                      | "and"
+                      | "or"
+                  ](acc, cur),
+                );
+              })
+            : null;
+        // console.log(`QueryString:`, queryString);
         if (typeof offset === "number") {
           let continueCursor = undefined;
           let isDone = false;
@@ -161,6 +163,33 @@ export const convexAdapter =
           });
           return res;
         }
+      },
+      updateMany: async ({ model, where, update }) => {
+        console.log(`UpdateMany:`, { model, where, update });
+        filterInvalidOperators(where);
+        where = transformWhereOperators(where);
+        console.log(`Where:`, where);
+
+        const transformed = transformInput(update, model, "update");
+        const res = await db({
+          action: "update",
+          tableName: model,
+          query: queryBuilder((q) => {
+            const eqs = where.map((w) =>
+              //@ts-ignore
+              q[w.operator || "eq"](w.field, w.value),
+            );
+            return eqs.reduce((acc, cur, indx) =>
+              q[
+                (where[indx - 1].connector || "AND").toLowerCase() as
+                  | "and"
+                  | "or"
+              ](acc, cur),
+            );
+          }),
+          update: transformed,
+        });
+        return transformOutput(res) as any;
       },
       //@ts-expect-error - will be fixed in the next version of better-auth
       createSchema(options, file) {
