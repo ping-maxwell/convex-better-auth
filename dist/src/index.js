@@ -68,8 +68,9 @@ export const convexAdapter = (config) => {
                         result[key] = res[key];
                     }
                 }
+                result = result ? transformOutput(result) : result;
                 debugLog(["findOne result", { result }]);
-                return result ? transformOutput(result) : result;
+                return result;
             },
             update: async ({ model, where, update }) => {
                 filterInvalidOperators(where);
@@ -87,8 +88,9 @@ export const convexAdapter = (config) => {
                     }),
                     update: transformed,
                 });
-                debugLog(["update result", { res }]);
-                return transformOutput(res);
+                const result = transformOutput(res);
+                debugLog(["update result", { result }]);
+                return result;
             },
             async findMany({ model, where, limit, offset, sortBy }) {
                 filterInvalidOperators(where);
@@ -165,8 +167,9 @@ export const convexAdapter = (config) => {
                     }),
                     update: transformed,
                 });
-                debugLog(["updateMany result", { result: transformOutput(res) }]);
-                return transformOutput(res);
+                const result = transformOutput(res);
+                debugLog(["updateMany result", { result }]);
+                return result;
             },
             delete: async ({ model, where }) => {
                 filterInvalidOperators(where);
@@ -199,7 +202,7 @@ export const convexAdapter = (config) => {
                         return eqs.reduce((acc, cur, indx) => q[(where[indx - 1].connector || "AND").toLowerCase()](acc, cur));
                     }),
                 });
-                debugLog(["deleteMany result", { res }]);
+                debugLog(["deleteMany result", { result: res }]);
                 return res;
             },
             //@ts-expect-error - will be fixed in the next version of better-auth

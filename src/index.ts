@@ -91,8 +91,9 @@ export const convexAdapter: ConvexAdapter = (config: ConvexAdapterOptions) => {
             result[key] = res[key];
           }
         }
+        result = result ? (transformOutput(result) as any) : result;
         debugLog(["findOne result", { result }]);
-        return result ? (transformOutput(result) as any) : result;
+        return result as any;
       },
       update: async ({ model, where, update }) => {
         filterInvalidOperators(where);
@@ -118,8 +119,9 @@ export const convexAdapter: ConvexAdapter = (config: ConvexAdapterOptions) => {
           }),
           update: transformed,
         });
-        debugLog(["update result", { res }]);
-        return transformOutput(res) as any;
+        const result = transformOutput(res) as any;
+        debugLog(["update result", { result }]);
+        return result;
       },
       async findMany({ model, where, limit, offset, sortBy }) {
         filterInvalidOperators(where);
@@ -215,8 +217,9 @@ export const convexAdapter: ConvexAdapter = (config: ConvexAdapterOptions) => {
           }),
           update: transformed,
         });
-        debugLog(["updateMany result", { result: transformOutput(res) }]);
-        return transformOutput(res) as any;
+        const result = transformOutput(res) as any;
+        debugLog(["updateMany result", { result }]);
+        return result;
       },
       delete: async ({ model, where }) => {
         filterInvalidOperators(where);
@@ -266,7 +269,7 @@ export const convexAdapter: ConvexAdapter = (config: ConvexAdapterOptions) => {
             );
           }),
         });
-        debugLog(["deleteMany result", { res }]);
+        debugLog(["deleteMany result", { result: res }]);
         return res as number;
       },
       //@ts-expect-error - will be fixed in the next version of better-auth

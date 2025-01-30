@@ -78,10 +78,10 @@ describe("Authentication Flow Tests", async () => {
     const client = new ConvexClient(process.env.CONVEX_URL as string);
     await client.mutation(api.tests.removeAll, {});
   });
-  // afterAll(async () => {
-  //   const client = new ConvexClient(process.env.CONVEX_URL as string);
-  //   await client.mutation(api.tests.removeAll, {});
-  // });
+  afterAll(async () => {
+    const client = new ConvexClient(process.env.CONVEX_URL as string);
+    await client.mutation(api.tests.removeAll, {});
+  });
 
   const auth = betterAuth({
     ...opts,
