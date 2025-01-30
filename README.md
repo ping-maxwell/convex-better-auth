@@ -20,7 +20,7 @@ npm install convex-database-adapter
 
 ## Usage
 
-### Initiate the Convex Database Adapter
+### 1. Initiate the Convex Database Adapter
 
 Head over to your Better Auth server instance, and under `database`, add the `convexAdapter` function.
 
@@ -37,7 +37,7 @@ export const auth = betterAuth({
 });
 ```
 
-### Create the Convex Handler
+### 2. Create the Convex Handler
 
 This allows our adapter to communicate with your Convex DB.
 
