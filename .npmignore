@@ -199,3 +199,4 @@ convex
 biome.json
 pnpm-lock.yaml
 test.ts
+.env.example
