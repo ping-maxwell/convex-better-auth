@@ -1,33 +1,6 @@
-import { generateId } from "better-auth";
+import { BetterAuthError, generateId } from "better-auth";
 import { getAuthTables } from "better-auth/db";
-import { anyApi } from "convex/server";
-export async function queryDb(client, args) {
-    return await client.action(anyApi.betterAuth.betterAuth, {
-        action: "query",
-        value: args,
-    });
-}
-export async function insertDb(client, args) {
-    const call = await client.action(anyApi.betterAuth.betterAuth, {
-        action: "insert",
-        value: args,
-    });
-    return call;
-}
-export async function updateDb(client, args) {
-    const call = await client.action(anyApi.betterAuth.betterAuth, {
-        action: "update",
-        value: args,
-    });
-    return call;
-}
-export async function deleteDb(client, args) {
-    const call = await client.action(anyApi.betterAuth.betterAuth, {
-        action: "delete",
-        value: args,
-    });
-    return call;
-}
+import { queryDb, deleteDb, insertDb, updateDb, } from "./../convex_action/calls";
 export const createTransform = ({ config, options, client, }) => {
     const schema = getAuthTables(options);
     function transformWhereOperators(where) {
@@ -50,13 +23,6 @@ export const createTransform = ({ config, options, client, }) => {
             }
         }
         return new_where;
-    }
-    function getField(model, field) {
-        if (field === "id") {
-            return field;
-        }
-        const f = schema[model].fields[field];
-        return f.fieldName || field;
     }
     async function db(options) {
         if (options.action === "query") {
@@ -135,20 +101,25 @@ export const createTransform = ({ config, options, client, }) => {
             }
             return transformedData;
         },
-        transformOutput(data) {
+        transformOutput(data, model) {
             for (const field in data) {
+                const modelname = getModelName(model);
+                // convert any fields that are dates to Date objects
+                if (schema[modelname].fields[field].type === "date") {
+                    data[field] = new Date(data[field]);
+                }
+                // convert Convex default values to their corresponding Better Auth supported names.
                 if (field === "_id") {
                     data.id = data[field];
                     delete data[field];
                 }
                 else if (field === "_creationTime") {
-                    data.createdAt = data[field];
+                    data.createdAt = new Date(data[field]);
                     delete data[field];
                 }
             }
             return data;
         },
-        getField,
         getModelName,
         db,
         filterInvalidOperators,

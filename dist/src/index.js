@@ -48,7 +48,7 @@ export const convexAdapter = (config) => {
                         result[key] = res[key];
                     }
                 }
-                result = result ? transformOutput(result) : result;
+                result = result ? transformOutput(result, model) : result;
                 debugLog([
                     "create result",
                     { result, duration: `${Date.now() - start}ms` },
@@ -78,7 +78,7 @@ export const convexAdapter = (config) => {
                         result[key] = res[key];
                     }
                 }
-                result = result ? transformOutput(result) : result;
+                result = result ? transformOutput(result, model) : result;
                 debugLog([
                     "findOne result",
                     { result, duration: `${Date.now() - start}ms` },
@@ -102,7 +102,7 @@ export const convexAdapter = (config) => {
                     }),
                     update: transformed,
                 });
-                const result = transformOutput(res);
+                const result = transformOutput(res, model);
                 debugLog([
                     "update result",
                     { result, duration: `${Date.now() - start}ms` },
@@ -149,7 +149,7 @@ export const convexAdapter = (config) => {
                             isDone = true;
                             const result = (limit
                                 ? results.slice(offset, offset + limit)
-                                : results.slice(offset)).map((x) => transformOutput(x));
+                                : results.slice(offset)).map((x) => transformOutput(x, model));
                             debugLog([
                                 "findMany pagination done",
                                 { result, duration: `${Date.now() - start}ms` },
@@ -167,7 +167,7 @@ export const convexAdapter = (config) => {
                         single: false,
                         limit: limit,
                     });
-                    const result = res.map((x) => transformOutput(x));
+                    const result = res.map((x) => transformOutput(x, model));
                     debugLog([
                         "findMany result",
                         { result, duration: `${Date.now() - start}ms` },
@@ -192,7 +192,7 @@ export const convexAdapter = (config) => {
                     }),
                     update: transformed,
                 });
-                const result = transformOutput(res);
+                const result = transformOutput(res, model);
                 debugLog([
                     "updateMany result",
                     { result, duration: `${Date.now() - start}ms` },
