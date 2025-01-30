@@ -48,11 +48,12 @@ export const convexAdapter = (config) => {
                         result[key] = res[key];
                     }
                 }
+                result = result ? transformOutput(result) : result;
                 debugLog([
                     "create result",
                     { result, duration: `${Date.now() - start}ms` },
                 ]);
-                return result ? transformOutput(result) : result;
+                return result;
             },
             findOne: async ({ model, where, select }) => {
                 const start = Date.now();
