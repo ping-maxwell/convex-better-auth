@@ -8,7 +8,7 @@ This is a database adapter for [Convex](https://www.convex.dev/) that allows you
 >
 > A list of limitations are as follows:
 >
-> - performnace issues: Since queries/mutations can't be dynamic, we essentially send a request to Convex Actions, to then send to to the mutate/query function. This alone is already 2 calls, not including the follow DB queries/mutation calls.
+> - performnace issues: Since queries/mutations can't be dynamic, we essentially send a request to Convex Actions, to then call the mutate/query function. This alone is already 2 calls, not including the follow DB queries/mutation calls.
 > - No support for `sortBy` queries. Better Auth requires this to be at a per `field` level, Convex does this at the table level.
 > - Degraded performance for pagiantion queries. Convex doesn't support this very well as we're working out of their scope.
 > - No support for operators such as `starts_with`, `ends_with`, or `contains`. Off the top of my head, only the admin plugin would be effected by this.
