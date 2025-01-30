@@ -1,67 +1,14 @@
-import { generateId } from "better-auth";
+import { BetterAuthError, generateId } from "better-auth";
 import { getAuthTables, type FieldAttribute } from "better-auth/db";
 import type { ConvexAdapterOptions } from "../types";
 import type { BetterAuthOptions, Where } from "better-auth";
 import type { ConvexClient } from "convex/browser";
-import { anyApi } from "convex/server";
-
-export async function queryDb(
-  client: ConvexClient,
-  args: {
-    tableName: string;
-    query?: string;
-    order?: "asc" | "desc";
-    single?: boolean;
-    limit?: number;
-    paginationOpts?: { numItems: number; cursor?: string };
-  },
-) {
-  return await client.action(anyApi.betterAuth.betterAuth, {
-    action: "query",
-    value: args,
-  });
-}
-export async function insertDb(
-  client: ConvexClient,
-  args: {
-    tableName: string;
-    values: Record<string, any>;
-  },
-) {
-  const call = await client.action(anyApi.betterAuth.betterAuth, {
-    action: "insert",
-    value: args,
-  });
-  return call;
-}
-export async function updateDb(
-  client: ConvexClient,
-  args: {
-    tableName: string;
-    query: string;
-    update: Record<string, any>;
-  },
-) {
-  const call = await client.action(anyApi.betterAuth.betterAuth, {
-    action: "update",
-    value: args,
-  });
-  return call;
-}
-export async function deleteDb(
-  client: ConvexClient,
-  args: {
-    tableName: string;
-    query: string;
-    deleteAll?: boolean;
-  },
-) {
-  const call = await client.action(anyApi.betterAuth.betterAuth, {
-    action: "delete",
-    value: args,
-  });
-  return call;
-}
+import {
+  queryDb,
+  deleteDb,
+  insertDb,
+  updateDb,
+} from "./../convex_action/calls";
 
 export const createTransform = ({
   config,
@@ -94,14 +41,6 @@ export const createTransform = ({
     }
 
     return new_where;
-  }
-
-  function getField(model: string, field: string) {
-    if (field === "id") {
-      return field;
-    }
-    const f = schema[model].fields[field];
-    return f.fieldName || field;
   }
 
   type DbInsert = {
@@ -222,19 +161,24 @@ export const createTransform = ({
       }
       return transformedData;
     },
-    transformOutput(data: Record<string, any>) {
+    transformOutput(data: Record<string, any>, model: string) {
       for (const field in data) {
+        const modelname = getModelName(model);
+        // convert any fields that are dates to Date objects
+        if (schema[modelname].fields[field].type === "date") {
+          data[field] = new Date(data[field]);
+        }
+        // convert Convex default values to their corresponding Better Auth supported names.
         if (field === "_id") {
           data.id = data[field];
           delete data[field];
         } else if (field === "_creationTime") {
-          data.createdAt = data[field];
+          data.createdAt = new Date(data[field]);
           delete data[field];
         }
       }
       return data;
     },
-    getField,
     getModelName,
     db,
     filterInvalidOperators,
