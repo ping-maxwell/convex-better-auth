@@ -15,7 +15,7 @@ Introducing a database adapter designed for [Convex](https://www.convex.dev/) th
 ## Installation
 
 ```bash
-npm install convex-database-adapter
+npm install convex-better-auth
 ```
 
 ## Usage
