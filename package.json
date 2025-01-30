@@ -1,6 +1,6 @@
 {
   "name": "convex-better-auth",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Convex Database Adapter for Better-Auth.",
   "main": "src/index.ts",
   "scripts": {
