@@ -305,9 +305,8 @@ export const convexAdapter: ConvexAdapter = (config: ConvexAdapterOptions) => {
         ]);
         return res as number;
       },
-      //@ts-expect-error - will be fixed in the next version of better-auth
-      createSchema(options, file) {
-        const code = generateSchema(options.plugins || []);
+      createSchema: async (options, file) => {
+        const code = await generateSchema(options.plugins || []);
         return {
           code,
           path: "/convex/schema.ts",
