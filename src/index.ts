@@ -46,7 +46,7 @@ export const convexAdapter: ConvexAdapter = (config: ConvexAdapterOptions) => {
 
     return {
       id: "convex",
-      async create({ data: values, model, select }) {
+      create: async ({ data: values, model, select }) => {
         const start = Date.now();
         debugLog(["create", { model, values, select }]);
         const transformed = transformInput(values, model, "create");
@@ -108,39 +108,7 @@ export const convexAdapter: ConvexAdapter = (config: ConvexAdapterOptions) => {
         ]);
         return result as any;
       },
-      update: async ({ model, where, update }) => {
-        const start = Date.now();
-        filterInvalidOperators(where);
-        where = transformWhereOperators(where);
-        debugLog(["update", { model, where, update }]);
-
-        const transformed = transformInput(update, model, "update");
-        const res = await db({
-          action: "update",
-          tableName: model,
-          query: queryBuilder((q) => {
-            const eqs = where.map((w) =>
-              //@ts-ignore
-              q[w.operator || "eq"](w.field, w.value),
-            );
-            return eqs.reduce((acc, cur, indx) =>
-              q[
-                (where[indx - 1].connector || "AND").toLowerCase() as
-                  | "and"
-                  | "or"
-              ](acc, cur),
-            );
-          }),
-          update: transformed,
-        });
-        const result = transformOutput(res, model) as any;
-        debugLog([
-          "update result",
-          { result, duration: `${Date.now() - start}ms` },
-        ]);
-        return result;
-      },
-      async findMany({ model, where, limit, offset, sortBy }) {
+      findMany: async ({ model, where, limit, offset, sortBy }) => {
         const start = Date.now();
         filterInvalidOperators(where);
         where = transformWhereOperators(where);
@@ -216,6 +184,38 @@ export const convexAdapter: ConvexAdapter = (config: ConvexAdapterOptions) => {
           ]);
           return result;
         }
+      },
+      update: async ({ model, where, update }) => {
+        const start = Date.now();
+        filterInvalidOperators(where);
+        where = transformWhereOperators(where);
+        debugLog(["update", { model, where, update }]);
+
+        const transformed = transformInput(update, model, "update");
+        const res = await db({
+          action: "update",
+          tableName: model,
+          query: queryBuilder((q) => {
+            const eqs = where.map((w) =>
+              //@ts-ignore
+              q[w.operator || "eq"](w.field, w.value),
+            );
+            return eqs.reduce((acc, cur, indx) =>
+              q[
+                (where[indx - 1].connector || "AND").toLowerCase() as
+                  | "and"
+                  | "or"
+              ](acc, cur),
+            );
+          }),
+          update: transformed,
+        });
+        const result = transformOutput(res, model) as any;
+        debugLog([
+          "update result",
+          { result, duration: `${Date.now() - start}ms` },
+        ]);
+        return result;
       },
       updateMany: async ({ model, where, update }) => {
         const start = Date.now();
