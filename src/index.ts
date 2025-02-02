@@ -5,6 +5,7 @@ import { generateSchema } from "./generate-schema";
 import { createTransform } from "./transform";
 import { queryBuilder } from "./convex_action/index";
 import type { PaginationResult } from "convex/server";
+import { getSchema } from "better-auth/db";
 
 export * from "./convex_action/index";
 
@@ -50,6 +51,7 @@ export const convexAdapter: ConvexAdapter = (config: ConvexAdapterOptions) => {
         const start = Date.now();
         debugLog(["create", { model, values, select }]);
         const transformed = transformInput(values, model, "create");
+
         const res = await db({
           action: "insert",
           tableName: model,

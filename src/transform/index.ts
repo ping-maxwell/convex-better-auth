@@ -1,4 +1,4 @@
-import { BetterAuthError, generateId } from "better-auth";
+import { generateId } from "better-auth";
 import { getAuthTables, type FieldAttribute } from "better-auth/db";
 import type { ConvexAdapterOptions } from "../types";
 import type { BetterAuthOptions, Where } from "better-auth";

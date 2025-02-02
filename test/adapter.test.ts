@@ -52,6 +52,7 @@ describe("Run BetterAuth Adapter tests", async () => {
     expect(res.length).toBe(2);
   });
 });
+
 const createTestOptions = (): BetterAuthOptions => ({
   user: {
     fields: { email: "email_address" },
