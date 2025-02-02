@@ -9,10 +9,10 @@ import { api } from "./../convex/_generated/api.js";
 
 describe("Handle Convex Adapter", async () => {
   it("should successfully add the Convex Adapter", async () => {
+    const client = new ConvexClient(process.env.CONVEX_URL as string);
+
     const auth = betterAuth({
-      database: convexAdapter({
-        convex_url: process.env.CONVEX_URL as string,
-      }),
+      database: convexAdapter(client),
     });
 
     expect(auth).toBeDefined();
@@ -22,18 +22,17 @@ describe("Handle Convex Adapter", async () => {
 });
 
 describe("Run BetterAuth Adapter tests", async () => {
+  const client = new ConvexClient(process.env.CONVEX_URL as string);
+
   beforeAll(async () => {
-    const client = new ConvexClient(process.env.CONVEX_URL as string);
     await client.mutation(api.tests.removeAll, {});
   });
   afterAll(async () => {
-    const client = new ConvexClient(process.env.CONVEX_URL as string);
     await client.mutation(api.tests.removeAll, {});
   });
 
-  const adapter = convexAdapter({
-    convex_url: process.env.CONVEX_URL as string,
-  });
+  const adapter = convexAdapter(client);
+
   await runAdapterTest({
     getAdapter: async (customOptions = {}) => {
       return adapter({ ...customOptions });
@@ -75,20 +74,18 @@ describe("Authentication Flow Tests", async () => {
     password: "password",
     name: "Test Name",
   };
+  const client = new ConvexClient(process.env.CONVEX_URL as string);
+
   beforeAll(async () => {
-    const client = new ConvexClient(process.env.CONVEX_URL as string);
     await client.mutation(api.tests.removeAll, {});
   });
   afterAll(async () => {
-    const client = new ConvexClient(process.env.CONVEX_URL as string);
     await client.mutation(api.tests.removeAll, {});
   });
 
   const auth = betterAuth({
     ...opts,
-    database: convexAdapter({
-      convex_url: process.env.CONVEX_URL as string,
-    }),
+    database: convexAdapter(client),
     emailAndPassword: {
       enabled: true,
     },

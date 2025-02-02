@@ -1,17 +1,19 @@
-import { ConvexClient } from "convex/browser";
+import type { ConvexClient } from "convex/browser";
 import type { Adapter, AdapterInstance, BetterAuthOptions } from "better-auth";
 import type { ConvexAdapterOptions } from "./types";
 import { generateSchema } from "./generate-schema";
 import { createTransform } from "./transform";
 import { queryBuilder } from "./convex_action/index";
 import type { PaginationResult } from "convex/server";
-import { getSchema } from "better-auth/db";
 
 export * from "./convex_action/index";
 
-export type ConvexAdapter = (config: ConvexAdapterOptions) => AdapterInstance;
+export type ConvexAdapter = (
+  convexClient: ConvexClient,
+  config?: ConvexAdapterOptions,
+) => AdapterInstance;
 
-export const convexAdapter: ConvexAdapter = (config: ConvexAdapterOptions) => {
+export const convexAdapter: ConvexAdapter = (client, config = {}) => {
   function debugLog(message: any[]) {
     if (config.enable_debug_logs) {
       console.log(`[convex-better-auth]`, ...message);
@@ -19,20 +21,6 @@ export const convexAdapter: ConvexAdapter = (config: ConvexAdapterOptions) => {
   }
 
   return (options: BetterAuthOptions): Adapter => {
-    let client: ConvexClient;
-    const connect_to_convext_start_time = Date.now();
-    try {
-      debugLog(["Connecting to Convex..."]);
-      client = new ConvexClient(config.convex_url);
-      debugLog([
-        "Connected to Convex",
-        `${Date.now() - connect_to_convext_start_time}ms`,
-      ]);
-    } catch (error) {
-      throw new Error(
-        `[ConvexAdapter] Could not connect to Convex, make sure your config.convex_url is set properly. ${error}`,
-      );
-    }
     const {
       transformInput,
       filterInvalidOperators,
