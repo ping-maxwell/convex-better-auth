@@ -1,8 +1,4 @@
-import type {
-  AuthPluginSchema,
-  BetterAuthOptions,
-  BetterAuthPlugin,
-} from "better-auth";
+import type { BetterAuthOptions } from "better-auth";
 import { getAuthTables } from "better-auth/db";
 import { format } from "prettier";
 
