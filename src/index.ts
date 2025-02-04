@@ -296,7 +296,7 @@ export const convexAdapter: ConvexAdapter = (client, config = {}) => {
         return res as number;
       },
       createSchema: async (options, file) => {
-        const code = await generateSchema(options.plugins || []);
+        const code = await generateSchema(options);
         return {
           code,
           path: "/convex/schema.ts",

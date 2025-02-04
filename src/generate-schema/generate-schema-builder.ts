@@ -1,4 +1,9 @@
-import type { AuthPluginSchema, BetterAuthPlugin } from "better-auth";
+import type {
+  AuthPluginSchema,
+  BetterAuthOptions,
+  BetterAuthPlugin,
+} from "better-auth";
+import { getAuthTables } from "better-auth/db";
 import { format } from "prettier";
 
 //TODO: make unit tests for the regex to scan for `export default defineSchema({` or for `const schema = defineSchema({`.
@@ -17,14 +22,14 @@ type Table = Record<string, Record<string, Field>>;
 type ConvexTypes = "boolean" | "id" | "null" | "number" | "string" | "array";
 
 export const generateSchemaBuilderStage = async ({
+  BAOptions,
   code,
-  plugins,
-}: { code: string; plugins: BetterAuthPlugin[] }) => {
+}: { code: string; BAOptions: BetterAuthOptions }) => {
   const formatted_code = await format(code, { filepath: "schema.ts" });
 
   const { post, pre, tables } = parse_existing_schema(formatted_code);
 
-  const convex_schema_str = convert_plugins_to_convex_schema(plugins, tables);
+  const convex_schema_str = convert_plugins_to_convex_schema(BAOptions, tables);
 
   return await format(`${pre}defineSchema({${convex_schema_str}})${post}`, {
     filepath: "schema.ts",
@@ -79,61 +84,57 @@ function parse_existing_schema(code: string): {
 }
 
 function convert_plugins_to_convex_schema(
-  plugins: BetterAuthPlugin[],
+  BAOptions: BetterAuthOptions,
   existing_tables: Table,
 ): string {
-  const plugin_schemas: AuthPluginSchema[] = plugins.map((x) => x.schema || {});
-  const all_model_names: string[] = [];
   const all_schemas: string[] = [];
-  for (const plugin_schema of plugin_schemas) {
-    // for each plugin
-    if (Object.keys(plugin_schema).length === 0) continue;
 
-    for (const [key, model] of Object.entries(plugin_schema)) {
-      // for each schema within the plugin
-      const modelName = model.modelName || key;
-      all_model_names.push(modelName);
-      const existing_table: Record<string, Field> | undefined =
-        existing_tables[modelName];
+  const tables = getAuthTables(BAOptions);
 
-      const schema_start = `${modelName}: defineTable({\n`;
-      let schema_body = ``;
-      const schema_ending = `}),`;
-      const all_field_names: string[] = [];
-      for (const [key_field_name, field] of Object.entries(model.fields)) {
-        const field_name = field.fieldName || key_field_name;
-        all_field_names.push(field_name);
-        let type: ConvexTypes = "string";
-        const isOptional = !field.required;
+  for (const [tableKey, table] of Object.entries(tables)) {
+    // for each schema within the plugin
+    const modelName = table.modelName;
+    const existing_table: Record<string, Field> | undefined =
+      existing_tables[modelName];
 
-        if (field_name === "id" || field.references?.model) type = "id";
-        else if (field.type === "boolean") type = "boolean";
-        else if (field.type === "number") type = "number";
-        else if (field.type === "string") type = "string";
-        else if (field.type === "date") type = "string";
-        else if (field.type === "number[]" || field.type === "string[]")
-          type = "array";
+    const schema_start = `${modelName}: defineTable({\n`;
+    let schema_body = ``;
+    const schema_ending = `}),`;
+    const all_field_names: string[] = [];
 
-        let contents = "";
-        if (type === "id") {
-          if (field.references?.model) contents = `"${field.references.model}"`;
-          else contents = `"${modelName}"`;
-        }
+    for (const [key_field_name, field] of Object.entries(table.fields)) {
+      const field_name = field.fieldName || key_field_name;
+      all_field_names.push(field_name);
+      let type: ConvexTypes = "string";
+      const isOptional = !field.required;
 
-        schema_body += `${field_name}: ${isOptional && type !== "id" ? `v.optional(v.${type}(${contents}))` : `v.${type}(${contents})`},\n`;
+      if (field_name === "id" || field.references?.model) type = "id";
+      else if (field.type === "boolean") type = "boolean";
+      else if (field.type === "number") type = "number";
+      else if (field.type === "string") type = "string";
+      else if (field.type === "date") type = "string";
+      else if (field.type === "number[]" || field.type === "string[]")
+        type = "array";
+
+      let contents = "";
+      if (type === "id") {
+        if (field.references?.model) contents = `"${field.references.model}"`;
+        else contents = `"${modelName}"`;
       }
 
-      if (existing_table) {
-        for (const [field_name, field] of Object.entries(existing_table).filter(
-          (x) => !all_field_names.includes(x[0]),
-        )) {
-          const { type, optional } = field;
-          schema_body += `${field_name}: ${optional ? `v.optional(v.${type}())` : `v.${type}()`},\n`;
-        }
-      }
-
-      all_schemas.push(`${schema_start}${schema_body}${schema_ending}`);
+      schema_body += `${field_name}: ${isOptional && type !== "id" ? `v.optional(v.${type}(${contents}))` : `v.${type}(${contents})`},\n`;
     }
+
+    if (existing_table) {
+      for (const [field_name, field] of Object.entries(existing_table).filter(
+        (x) => !all_field_names.includes(x[0]),
+      )) {
+        const { type, optional } = field;
+        schema_body += `${field_name}: ${optional ? `v.optional(v.${type}())` : `v.${type}()`},\n`;
+      }
+    }
+
+    all_schemas.push(`${schema_start}${schema_body}${schema_ending}`);
   }
 
   all_schemas.splice(
@@ -142,7 +143,10 @@ function convert_plugins_to_convex_schema(
     convert_parsed_schema_to_convex_schema(
       Object.fromEntries(
         Object.entries(existing_tables).filter(
-          ([table_name, fields]) => !all_model_names.includes(table_name),
+          ([table_name, fields]) =>
+            !Object.entries(tables)
+              .map((x) => x[1].modelName)
+              .includes(table_name),
         ),
       ),
     ),
