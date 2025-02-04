@@ -7,28 +7,69 @@ const CONVEX_TEST_DIR_PATH = getConvexPath("./test/test_convex1");
 const CONVEX_TEST_DIR_PATH2 = getConvexPath("./test/test_convex2");
 const CONVEX_TEST_DIR_PATH3 = getConvexPath("./test/test_convex3");
 
+const default_tables = `user: defineTable({
+    name: v.string(),
+    email: v.string(),
+    emailVerified: v.boolean(),
+    image: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  }),
+  session: defineTable({
+    expiresAt: v.string(),
+    token: v.string(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+    ipAddress: v.optional(v.string()),
+    userAgent: v.optional(v.string()),
+    userId: v.id("user"),
+  }),
+  account: defineTable({
+    accountId: v.string(),
+    providerId: v.string(),
+    userId: v.id("user"),
+    accessToken: v.optional(v.string()),
+    refreshToken: v.optional(v.string()),
+    idToken: v.optional(v.string()),
+    accessTokenExpiresAt: v.optional(v.string()),
+    refreshTokenExpiresAt: v.optional(v.string()),
+    scope: v.optional(v.string()),
+    password: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  }),
+  verification: defineTable({
+    identifier: v.string(),
+    value: v.string(),
+    expiresAt: v.string(),
+    createdAt: v.optional(v.string()),
+    updatedAt: v.optional(v.string()),
+  }),`;
+
 describe(`Handle schema generation`, async () => {
   it("should generate the correct schema with existing schema", async () => {
     const generate_schema = await generateSchema(
-      [
-        {
-          schema: {
-            testTable: {
-              fields: {
-                hello: {
-                  type: "boolean",
-                  required: false,
-                },
-                hello2: {
-                  type: "string",
-                  required: true,
+      {
+        plugins: [
+          {
+            schema: {
+              testTable: {
+                fields: {
+                  hello: {
+                    type: "boolean",
+                    required: false,
+                  },
+                  hello2: {
+                    type: "string",
+                    required: true,
+                  },
                 },
               },
             },
+            id: "test",
           },
-          id: "test",
-        },
-      ],
+        ],
+      },
       {
         convex_dir_path: CONVEX_TEST_DIR_PATH,
       },
@@ -40,6 +81,7 @@ describe(`Handle schema generation`, async () => {
         `import {v} from "convex/values";`,
         ``,
         `export default defineSchema({`,
+        default_tables,
         `messages: defineTable({`,
         `author: v.string(),`,
         `body: v.boolean(),`,
@@ -72,19 +114,21 @@ describe(`Handle schema generation`, async () => {
   // `status: v.optional(v.string()),`,
   it("should generate the correct schema based on multiple plugins", async () => {
     const generate_schema = await generateSchema(
-      [
-        {
-          schema: {
-            user: {
-              fields: {},
+      {
+        plugins: [
+          {
+            schema: {
+              user: {
+                fields: {},
+              },
+              admins: {
+                fields: {},
+              },
             },
-            admins: {
-              fields: {},
-            },
+            id: "test",
           },
-          id: "test",
-        },
-      ],
+        ],
+      },
       {
         convex_dir_path: CONVEX_TEST_DIR_PATH2,
       },
@@ -96,6 +140,7 @@ describe(`Handle schema generation`, async () => {
         `import {v} from "convex/values";`,
         ``,
         `export default defineSchema({`,
+        default_tables,
         `messages: defineTable({`,
         `author: v.string(),`,
         `body: v.boolean(),`,
@@ -123,45 +168,47 @@ describe(`Handle schema generation`, async () => {
 
   it(`should generate the correct schema based on multiple different field types`, async () => {
     const generate_schema = await generateSchema(
-      [
-        {
-          id: "admin",
-          schema: {
-            admin: {
-              fields: {
-                name: {
-                  type: "string",
-                  required: true,
-                },
-                id: {
-                  type: "string",
-                  required: true,
-                },
-                isAdmin: {
-                  type: "boolean",
-                  required: true,
-                },
-                status: {
-                  type: "string",
-                  required: false,
-                },
-                date: {
-                  type: "date",
-                },
-                number: {
-                  type: "number",
-                },
-                str_array: {
-                  type: "string[]",
-                },
-                num_array: {
-                  type: "number[]",
+      {
+        plugins: [
+          {
+            id: "admin",
+            schema: {
+              admin: {
+                fields: {
+                  name: {
+                    type: "string",
+                    required: true,
+                  },
+                  id: {
+                    type: "string",
+                    required: true,
+                  },
+                  isAdmin: {
+                    type: "boolean",
+                    required: true,
+                  },
+                  status: {
+                    type: "string",
+                    required: false,
+                  },
+                  date: {
+                    type: "date",
+                  },
+                  number: {
+                    type: "number",
+                  },
+                  str_array: {
+                    type: "string[]",
+                  },
+                  num_array: {
+                    type: "number[]",
+                  },
                 },
               },
             },
           },
-        },
-      ],
+        ],
+      },
       {
         convex_dir_path: CONVEX_TEST_DIR_PATH3,
       },
@@ -173,6 +220,7 @@ describe(`Handle schema generation`, async () => {
         `import {v} from "convex/values";`,
         ``,
         `export default defineSchema({`,
+        default_tables,
         `admin: defineTable({`,
         `name: v.string(),`,
         `id: v.id("admin"),`,
@@ -201,16 +249,18 @@ describe(`Handle schema generation`, async () => {
 
   test.skip("should support .index method after `defineTable`", async () => {
     const generate_schema = await generateSchema(
-      [
-        {
-          schema: {
-            testTable: {
-              fields: {},
+      {
+        plugins: [
+          {
+            schema: {
+              testTable: {
+                fields: {},
+              },
             },
+            id: "test",
           },
-          id: "test",
-        },
-      ],
+        ],
+      },
       {
         convex_dir_path: CONVEX_TEST_DIR_PATH3,
       },
@@ -222,6 +272,7 @@ describe(`Handle schema generation`, async () => {
         `import {v} from "convex/values";`,
         ``,
         `export default defineSchema({`,
+        default_tables,
         `testTable: defineTable({`,
         `}).index("by_something", ["email"]),`,
         `});`,
@@ -242,36 +293,38 @@ describe(`Handle schema generation`, async () => {
 
   it(`should generate references correctly`, async () => {
     const generate_schema = await generateSchema(
-      [
-        {
-          id: "admin",
-          schema: {
-            admin: {
-              fields: {
-                id: {
-                  type: "string",
-                  required: true,
-                },
-                reference_optional: {
-                  type: "string",
-                  references: {
-                    field: "something",
-                    model: "something_else",
+      {
+        plugins: [
+          {
+            id: "admin",
+            schema: {
+              admin: {
+                fields: {
+                  id: {
+                    type: "string",
+                    required: true,
                   },
-                },
-                reference_required: {
-                  type: "string",
-                  required: true,
-                  references: {
-                    field: "something2",
-                    model: "something2_else",
+                  reference_optional: {
+                    type: "string",
+                    references: {
+                      field: "something",
+                      model: "something_else",
+                    },
+                  },
+                  reference_required: {
+                    type: "string",
+                    required: true,
+                    references: {
+                      field: "something2",
+                      model: "something2_else",
+                    },
                   },
                 },
               },
             },
           },
-        },
-      ],
+        ],
+      },
       {
         convex_dir_path: CONVEX_TEST_DIR_PATH3,
       },
@@ -283,6 +336,7 @@ describe(`Handle schema generation`, async () => {
         `import {v} from "convex/values";`,
         ``,
         `export default defineSchema({`,
+        default_tables,
         `admin: defineTable({`,
         `id: v.id("admin"),`,
         `reference_optional: v.id("something_else"),`,
