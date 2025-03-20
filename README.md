@@ -1,6 +1,6 @@
-# THIS REPO IS MOVING!
+# THIS REPO HAS MOVED!
 
-The convex adapter will be moving under my [better-auth-kit monorepo](https://github.com/ping-maxwell/better-auth-kit).
+The convex adapter is moved under [better-auth-kit monorepo](https://github.com/ping-maxwell/better-auth-kit).
 
-Read our roadmap to understand what's going on:
-https://www.better-auth-kit.com/roadmap
+Read our docs on the Convex adapter here:
+[https://better-auth-kit.com/docs/adapter/convex](https://www.better-auth-kit.com/docs/adapters/convex)
